@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, Loader2 } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +19,7 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -27,6 +28,8 @@ import { invoices as initialInvoices } from "@/lib/data";
 import type { Invoice } from '@/lib/types';
 import { cn } from "@/lib/utils";
 import { UploadUsageDataDialog } from './_components/upload-usage-data-dialog';
+import { useToast } from '@/hooks/use-toast';
+import { sendInvoiceNotification } from './actions';
 
 const statusMap = {
   paid: { label: 'پرداخت شده', className: 'text-green-400 bg-green-500/20 border-green-500/20' },
@@ -40,7 +43,7 @@ export default function InvoicesPage() {
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
 
   const handleNewInvoices = (newInvoices: Invoice[]) => {
-    setInvoices(prevInvoices => [...prevInvoices, ...newInvoices]);
+    setInvoices(prevInvoices => [...newInvoices, ...newInvoices].sort((a,b) => Date.parse(b.date) - Date.parse(a.date)));
   };
 
   return (
@@ -89,6 +92,56 @@ export default function InvoicesPage() {
 }
 
 function InvoiceTable({ invoiceList }: { invoiceList: Invoice[] }) {
+    const { toast } = useToast();
+    const [notifyingInvoiceId, setNotifyingInvoiceId] = useState<string | null>(null);
+
+    const handleSendNotification = async (invoice: Invoice) => {
+        setNotifyingInvoiceId(invoice.id);
+        try {
+            // These would come from a settings store/context in a real app
+            const botToken = localStorage.getItem('telegramBotToken') || '';
+            const messageTemplate = localStorage.getItem('telegramMessageTemplate') || "نماینده گرامی {{name}}، فاکتور جدید شما به مبلغ {{amount}} تومان در پورتال شما ثبت شد. لینک مشاهده: {{portalLink}}";
+            
+            if (!botToken) {
+                 toast({
+                    variant: 'destructive',
+                    title: 'تنظیمات تلگرام یافت نشد',
+                    description: 'لطفا ابتدا توکن ربات را در صفحه تنظیمات وارد کنید.',
+                });
+                return;
+            }
+
+            const result = await sendInvoiceNotification({
+                invoice,
+                botToken,
+                // chatId is optional, the action will figure it out
+                messageTemplate,
+            });
+
+            if (result.success) {
+                toast({
+                    title: 'نوتیفیکیشن ارسال شد',
+                    description: `پیام با موفقیت برای ${invoice.agentName} ارسال شد.`,
+                });
+            } else {
+                toast({
+                    variant: 'destructive',
+                    title: 'خطا در ارسال',
+                    description: result.message,
+                });
+            }
+        } catch (error) {
+            toast({
+                variant: 'destructive',
+                title: 'خطای ناشناخته',
+                description: error instanceof Error ? error.message : 'مشکلی در ارسال نوتیفیکیشن پیش آمد.',
+            });
+        } finally {
+            setNotifyingInvoiceId(null);
+        }
+    };
+
+
     if (invoiceList.length === 0) {
         return <div className="text-center text-muted-foreground p-8">هیچ فاکتوری یافت نشد.</div>
     }
@@ -127,8 +180,8 @@ function InvoiceTable({ invoiceList }: { invoiceList: Invoice[] }) {
             <TableCell>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button aria-haspopup="true" size="icon" variant="ghost">
-                    <MoreHorizontal className="h-4 w-4" />
+                  <Button aria-haspopup="true" size="icon" variant="ghost" disabled={notifyingInvoiceId === invoice.id}>
+                    {notifyingInvoiceId === invoice.id ? <Loader2 className="h-4 w-4 animate-spin" /> :<MoreHorizontal className="h-4 w-4" />}
                     <span className="sr-only">Toggle menu</span>
                   </Button>
                 </DropdownMenuTrigger>
@@ -136,7 +189,10 @@ function InvoiceTable({ invoiceList }: { invoiceList: Invoice[] }) {
                   <DropdownMenuLabel>اقدامات</DropdownMenuLabel>
                   <DropdownMenuItem>مشاهده جزئیات</DropdownMenuItem>
                   <DropdownMenuItem>ثبت پرداخت</DropdownMenuItem>
-                  <DropdownMenuItem>ارسال نوتیفیکیشن</DropdownMenuItem>
+                   <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => handleSendNotification(invoice)} disabled={notifyingInvoiceId === invoice.id}>
+                    ارسال نوتیفیکیشن تلگرام
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </TableCell>
