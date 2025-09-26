@@ -1,3 +1,7 @@
+
+'use client';
+
+import { useState } from 'react';
 import { MoreHorizontal } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -19,8 +23,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { invoices } from "@/lib/data";
+import { invoices as initialInvoices } from "@/lib/data";
+import type { Invoice } from '@/lib/types';
 import { cn } from "@/lib/utils";
+import { UploadUsageDataDialog } from './_components/upload-usage-data-dialog';
 
 const statusMap = {
   paid: { label: 'پرداخت شده', className: 'text-green-400 bg-green-500/20 border-green-500/20' },
@@ -30,11 +36,29 @@ const statusMap = {
 };
 
 export default function InvoicesPage() {
+  const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices);
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+
+  const handleNewInvoices = (newInvoices: Invoice[]) => {
+    setInvoices(prevInvoices => [...prevInvoices, ...newInvoices]);
+  };
+
   return (
     <Tabs defaultValue="all">
       <PageHeader title="مدیریت فاکتورها">
-        <Button className="bg-purple-600 hover:bg-purple-700 text-white">بارگذاری و پردازش فایل مصرف</Button>
+        <Button 
+          className="bg-purple-600 hover:bg-purple-700 text-white"
+          onClick={() => setIsUploadDialogOpen(true)}
+        >
+          بارگذاری و پردازش فایل مصرف
+        </Button>
       </PageHeader>
+      
+      <UploadUsageDataDialog
+        isOpen={isUploadDialogOpen}
+        onOpenChange={setIsUploadDialogOpen}
+        onNewInvoices={handleNewInvoices}
+      />
       
       <TabsList className="grid w-full grid-cols-5 mb-4">
         <TabsTrigger value="all">همه</TabsTrigger>
@@ -64,7 +88,7 @@ export default function InvoicesPage() {
   );
 }
 
-function InvoiceTable({ invoiceList }: { invoiceList: typeof invoices }) {
+function InvoiceTable({ invoiceList }: { invoiceList: Invoice[] }) {
     if (invoiceList.length === 0) {
         return <div className="text-center text-muted-foreground p-8">هیچ فاکتوری یافت نشد.</div>
     }
@@ -92,9 +116,9 @@ function InvoiceTable({ invoiceList }: { invoiceList: typeof invoices }) {
             <TableCell>
               <Badge
                 variant="outline"
-                className={cn(statusMap[invoice.status].className, 'hover:bg-none')}
+                className={cn(statusMap[invoice.status as keyof typeof statusMap].className, 'hover:bg-none')}
               >
-                {statusMap[invoice.status].label}
+                {statusMap[invoice.status as keyof typeof statusMap].label}
               </Badge>
             </TableCell>
             <TableCell className="font-code">{new Intl.NumberFormat('fa-IR').format(invoice.amount)} تومان</TableCell>
