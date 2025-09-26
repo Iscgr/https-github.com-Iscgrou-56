@@ -43,7 +43,7 @@ const statusMap: Record<Invoice['status'], { label: string; className: string }>
 };
 
 export default function AgentPortalPage({
-  params,
+  params: { agentId },
 }: {
   params: { agentId: string };
 }) {
@@ -53,7 +53,7 @@ export default function AgentPortalPage({
   const [isPaymentFormOpen, setIsPaymentFormOpen] = useState(false);
   const { toast } = useToast();
 
-  const agent = agents.find(a => a.id === params.agentId || a.publicId === params.agentId);
+  const agent = agents.find(a => a.id === agentId || a.publicId === agentId);
 
   if (!agent) {
     notFound();
