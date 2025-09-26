@@ -14,8 +14,7 @@ export default function SettingsPage() {
           <CardHeader>
             <CardTitle>نوتیفیکیشن تلگرام</CardTitle>
             <CardDescription>
-              تنظیمات مربوط به ربات تلگرام برای ارسال نوتیفیکیشن‌ها به نمایندگان.
-              میتوانید از متغیرهای {{name}}، {{amount}} و {{portalLink}} در قالب پیام استفاده کنید.
+              {"تنظیمات مربوط به ربات تلگرام برای ارسال نوتیفیکیشن‌ها به نمایندگان. میتوانید از متغیرهای {{name}}، {{amount}} و {{portalLink}} در قالب پیام استفاده کنید."}
             </CardDescription>
           </CardHeader>
           <CardContent>
