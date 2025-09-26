@@ -1,13 +1,12 @@
-
 'use server';
 
 import { z } from 'zod';
 import { agents, invoices, payments } from '@/lib/data';
-import type { Agent, Invoice, Payment } from '@/lib/types';
+import type { Payment } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 
 const PaymentFormSchema = z.object({
-  agentId: z.string(),
+  agentId: z.string().min(1, { message: 'انتخاب نماینده الزامی است.' }),
   invoiceId: z.string().min(1, { message: 'انتخاب فاکتور الزامی است.' }),
   amount: z.coerce.number().positive({ message: 'مبلغ باید یک عدد مثبت باشد.' }),
   paymentDate: z.string().min(1, { message: 'تاریخ پرداخت الزامی است.' }),
@@ -17,19 +16,11 @@ const PaymentFormSchema = z.object({
 export type PaymentFormState = {
   message: string;
   errors?: {
+    agentId?: string[];
     invoiceId?: string[];
     amount?: string[];
     paymentDate?: string[];
   };
-  payment?: Payment;
-  updatedAgent?: Agent;
-  updatedInvoice?: Invoice;
-} | {
-  message: string;
-  errors?: undefined;
-  payment?: Payment;
-  updatedAgent?: Agent;
-  updatedInvoice?: Invoice;
 }
 
 export async function recordPayment(
@@ -56,18 +47,21 @@ export async function recordPayment(
   if (!invoice) {
     return { message: 'خطا: فاکتور یافت نشد.' };
   }
+  if(invoice.agentId !== agentId) {
+    return { message: 'خطا: این فاکتور متعلق به نماینده انتخاب شده نیست.'}
+  }
 
-  // Find total payments for this invoice already
   const paymentsForInvoice = payments.filter(p => p.invoiceId === invoiceId);
   const totalPaidForInvoice = paymentsForInvoice.reduce((sum, p) => sum + p.amount, 0);
   
-  if (amount > (invoice.amount - totalPaidForInvoice)) {
+  const remainingAmount = invoice.amount - totalPaidForInvoice;
+
+  if (amount > remainingAmount) {
     return {
-      message: `مبلغ پرداخت نمی‌تواند بیشتر از باقیمانده فاکتور ( ${new Intl.NumberFormat('fa-IR').format(invoice.amount - totalPaidForInvoice)} تومان) باشد.`,
+      message: `مبلغ پرداخت ( ${new Intl.NumberFormat('fa-IR').format(amount)} ) نمی‌تواند بیشتر از باقیمانده فاکتور ( ${new Intl.NumberFormat('fa-IR').format(remainingAmount)} تومان) باشد.`,
       errors: { amount: [`مبلغ بیش از حد مجاز است.`] }
     };
   }
-
 
   try {
     const newPayment: Payment = {
@@ -81,29 +75,19 @@ export async function recordPayment(
 
     payments.unshift(newPayment);
 
-    // Update agent financials
     agent.totalPayments += amount;
     agent.totalDebt -= amount;
     
-    // Update invoice status
     const newTotalPaid = totalPaidForInvoice + amount;
-    if (newTotalPaid >= invoice.amount) {
-        invoice.status = 'paid';
-    } else {
-        invoice.status = 'partial';
-    }
+    invoice.status = newTotalPaid >= invoice.amount ? 'paid' : 'partial';
 
     revalidatePath('/(dashboard)/agents');
+    revalidatePath(`/(dashboard)/agents/${agent.id}`);
     revalidatePath('/(dashboard)/invoices');
     revalidatePath('/(dashboard)/payments');
-    revalidatePath(`/portal/${agent.id}`);
-    revalidatePath(`/portal/${agent.publicId}`);
 
     return { 
         message: `پرداخت برای فاکتور ${invoice.invoiceNumber} با موفقیت ثبت شد.`, 
-        payment: newPayment,
-        updatedAgent: agent,
-        updatedInvoice: invoice
     };
 
   } catch (error) {

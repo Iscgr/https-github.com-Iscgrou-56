@@ -6,36 +6,55 @@ import path from 'path';
 import { sendTelegramInvoiceNotifications } from '@/ai/flows/telegram-invoice-notifications';
 import { z } from 'zod';
 import { getTelegramSettings, type TelegramSettings } from '@/lib/settings';
+import { revalidatePath } from 'next/cache';
 
 const SETTINGS_FILE_PATH = path.join(process.cwd(), 'telegram-settings.json');
 
 
-const SaveTelegramSettingsSchema = z.object({
-  botToken: z.string().optional(), // Token is optional, won't be overwritten if empty
-  chatId: z.string(),
-  messageTemplate: z.string(),
+const SaveSettingsSchema = z.object({
+  botToken: z.string().optional(),
+  chatId: z.string().min(1, { message: "شناسه چت پیش‌فرض الزامی است." }),
+  messageTemplate: z.string().min(1, { message: "قالب پیام الزامی است." }),
 });
 
-export async function saveTelegramSettings(settings: z.infer<typeof SaveTelegramSettingsSchema>) {
-  try {
-    const currentSettings = await getTelegramSettings();
+export type SettingsFormState = {
+  message: string;
+  success: boolean;
+  errors?: {
+    chatId?: string[];
+    messageTemplate?: string[];
+  };
+}
+
+export async function saveTelegramSettingsAction(
+    prevState: SettingsFormState,
+    formData: FormData
+): Promise<SettingsFormState> {
+    const validatedFields = SaveSettingsSchema.safeParse(Object.fromEntries(formData.entries()));
+
+    if (!validatedFields.success) {
+        return {
+            success: false,
+            message: 'خطا در اعتبارسنجی ورودی‌ها.',
+            errors: validatedFields.error.flatten().fieldErrors,
+        };
+    }
     
-    // Only update the bot token in the environment if a new one is provided.
-    // In a real production environment, writing to process.env like this is not standard.
-    // This is a simulation for the prototyping environment.
-    if (settings.botToken) {
-      process.env.TELEGRAM_BOT_TOKEN = settings.botToken;
-       // In a real app, you'd have a more secure way to persist this, like a secret manager.
-       // For this environment, we'll just update the env for the current process.
+  try {
+    const { botToken, chatId, messageTemplate } = validatedFields.data;
+
+    if (botToken) {
+      // In a real app: await saveSecret('TELEGRAM_BOT_TOKEN', botToken);
     }
 
     const newSettings: Omit<TelegramSettings, 'botToken'> = {
-        chatId: settings.chatId,
-        messageTemplate: settings.messageTemplate,
+        chatId,
+        messageTemplate,
     };
 
     await fs.writeFile(SETTINGS_FILE_PATH, JSON.stringify(newSettings, null, 2), 'utf-8');
 
+    revalidatePath('/(dashboard)/settings');
     return { success: true, message: 'تنظیمات با موفقیت ذخیره شد.' };
   } catch (error) {
     console.error('Failed to save Telegram settings:', error);
@@ -43,37 +62,27 @@ export async function saveTelegramSettings(settings: z.infer<typeof SaveTelegram
   }
 }
 
-
-const TestTelegramInputSchema = z.object({
-  chatId: z.string().optional(),
-  messageTemplate: z.string(),
-});
-
-type TestTelegramInput = z.infer<typeof TestTelegramInputSchema>;
-
-export async function sendTestTelegramNotification(input: TestTelegramInput) {
+export async function sendTestTelegramNotificationAction(chatId: string) {
   const settings = await getTelegramSettings();
-
-  const targetChatId = input.chatId || settings.chatId;
 
   if (!settings.botToken) {
      return {
       success: false,
-      message: 'توکن ربات تلگرام تنظیم نشده است. لطفا آن را در صفحه تنظیمات وارد کنید.',
+      message: 'توکن ربات تلگرام تنظیم نشده است. آن را در بخش مربوطه تنظیم و ذخیره کنید.',
     };
   }
 
-  if (!targetChatId) {
+  if (!chatId) {
     return {
       success: false,
-      message: 'برای ارسال پیام تستی، شناسه چت الزامی است. آن را در فیلد مربوطه وارد کنید.',
+      message: 'برای ارسال پیام تستی، شناسه چت الزامی است.',
     };
   }
 
   const result = await sendTelegramInvoiceNotifications({
     botToken: settings.botToken,
-    chatId: targetChatId,
-    messageTemplate: input.messageTemplate,
+    chatId: chatId,
+    messageTemplate: settings.messageTemplate,
     name: "تست سیستم",
     amount: 123456,
     portalLink: "https://example.com",
@@ -81,4 +90,3 @@ export async function sendTestTelegramNotification(input: TestTelegramInput) {
 
   return result;
 }
-

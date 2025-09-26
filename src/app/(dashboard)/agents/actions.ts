@@ -1,4 +1,3 @@
-
 'use server';
 
 import { z } from 'zod';
@@ -9,12 +8,15 @@ import crypto from 'crypto';
 
 const AgentFormSchema = z.object({
   id: z.string().optional(),
-  name: z.string().min(3, { message: 'نام حداقل باید ۳ کاراکتر باشد.' }),
-  code: z.string().min(3, { message: 'کد نماینده حداقل باید ۳ کاراکتر باشد.'}),
+  name: z.string().min(2, { message: 'نام حداقل باید ۲ کاراکتر باشد.' }),
+  code: z.string().min(2, { message: 'کد نماینده حداقل باید ۲ کاراکتر باشد.'}),
   email: z.string().email({ message: 'ایمیل وارد شده معتبر نیست.' }),
-  phone: z.string().min(10, { message: 'شماره تلفن حداقل باید ۱۰ رقم باشد.' }),
+  phone: z.string().min(11, { message: 'شماره تلفن حداقل باید ۱۱ رقم باشد.' }),
   telegramChatId: z.string().optional(),
   salesPartnerId: z.string().nullable(),
+  commissionRate: z.coerce.number()
+    .min(0, { message: "پورسانت نمی‌تواند منفی باشد." })
+    .max(100, { message: "پورسانت نمی‌تواند بیشتر از ۱۰۰ باشد." }),
 });
 
 export type AgentFormState = {
@@ -25,6 +27,7 @@ export type AgentFormState = {
     email?: string[];
     phone?: string[];
     salesPartnerId?: string[];
+    commissionRate?: string[];
   };
   agent?: Agent;
 } | {
@@ -38,11 +41,13 @@ export async function addOrUpdateAgent(
   formData: FormData
 ): Promise<AgentFormState> {
   const rawData = Object.fromEntries(formData.entries());
-
-  const validatedFields = AgentFormSchema.safeParse({
+  
+  const processedData = {
     ...rawData,
     salesPartnerId: rawData.salesPartnerId === 'none' ? null : rawData.salesPartnerId,
-  });
+  };
+
+  const validatedFields = AgentFormSchema.safeParse(processedData);
 
   if (!validatedFields.success) {
     return {
@@ -51,42 +56,64 @@ export async function addOrUpdateAgent(
     };
   }
 
-  const { name, code, email, phone, telegramChatId, salesPartnerId } = validatedFields.data;
+  const { id, name, code, email, phone, telegramChatId, salesPartnerId, commissionRate } = validatedFields.data;
 
   try {
-    // In a real app, you'd save this to a database.
-    const agentId = `agent-${Date.now()}`;
-    const publicId = `pub-${code}-${crypto.randomBytes(4).toString('hex')}`;
-    
-    const newAgent: Agent = {
-      id: agentId,
-      publicId: publicId,
-      name,
-      code,
-      contact: {
-        email,
-        phone,
-        telegramChatId: telegramChatId || undefined,
-      },
-      salesPartnerId,
-      status: 'active',
-      totalSales: 0,
-      totalPayments: 0,
-      totalDebt: 0,
-      avatarUrl: `https://picsum.photos/seed/${name}/100/100`,
-      portalLink: `/portal/${publicId}`,
-      createdAt: new Date().toISOString(),
-    };
+    if (id) {
+      // Update existing agent
+      const agentIndex = agents.findIndex(a => a.id === id);
+      if (agentIndex === -1) {
+        return { message: 'خطا: نماینده برای ویرایش یافت نشد.' };
+      }
 
-    agents.unshift(newAgent);
-    
-    revalidatePath('/(dashboard)/agents');
-    
-    return { message: `نماینده ${name} با موفقیت اضافه شد.`, agent: newAgent };
+      const updatedAgent = {
+        ...agents[agentIndex],
+        name,
+        code,
+        contact: { email, phone, telegramChatId: telegramChatId || undefined },
+        salesPartnerId,
+        commissionRate,
+      };
 
+      agents[agentIndex] = updatedAgent;
+      
+      revalidatePath('/(dashboard)/agents');
+      return { message: `نماینده ${name} با موفقیت ویرایش شد.`, agent: updatedAgent };
+
+    } else {
+      // Add new agent
+      const agentId = `agent-${Date.now()}`;
+      const publicId = `pub-${code}-${crypto.randomBytes(4).toString('hex')}`;
+      
+      const newAgent: Agent = {
+        id: agentId,
+        publicId: publicId,
+        name,
+        code,
+        contact: {
+          email,
+          phone,
+          telegramChatId: telegramChatId || undefined,
+        },
+        salesPartnerId,
+        commissionRate,
+        status: 'active',
+        totalSales: 0,
+        totalPayments: 0,
+        totalDebt: 0,
+        avatarUrl: `https://picsum.photos/seed/${name}/100/100`,
+        portalLink: `/portal/${publicId}`,
+        createdAt: new Date().toISOString(),
+      };
+
+      agents.unshift(newAgent);
+      
+      revalidatePath('/(dashboard)/agents');
+      return { message: `نماینده ${name} با موفقیت اضافه شد.`, agent: newAgent };
+    }
   } catch (error) {
     return {
-      message: 'خطا در افزودن نماینده. لطفا دوباره تلاش کنید.'
+      message: 'خطا در پردازش درخواست. لطفا دوباره تلاش کنید.'
     };
   }
 }

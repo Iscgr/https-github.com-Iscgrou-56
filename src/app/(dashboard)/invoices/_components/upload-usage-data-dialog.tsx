@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useTransition } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -9,6 +9,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogTrigger,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,18 +17,12 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Upload } from 'lucide-react';
 import { processUsageFile } from '../actions';
-import type { Invoice } from '@/lib/types';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
-type Props = {
-  isOpen: boolean;
-  onOpenChange: (isOpen: boolean) => void;
-  onNewInvoices: (invoices: Invoice[]) => void;
-};
-
-export function UploadUsageDataDialog({ isOpen, onOpenChange, onNewInvoices }: Props) {
+export function UploadUsageDataDialog() {
+  const [isOpen, setIsOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const [processedHashes, setProcessedHashes] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -52,7 +47,7 @@ export function UploadUsageDataDialog({ isOpen, onOpenChange, onNewInvoices }: P
     fileInputRef.current?.click();
   };
 
-  const handleProcess = async () => {
+  const handleProcess = () => {
     if (!file) {
       toast({
         variant: 'destructive',
@@ -62,71 +57,75 @@ export function UploadUsageDataDialog({ isOpen, onOpenChange, onNewInvoices }: P
       return;
     }
 
-    setIsProcessing(true);
-    try {
-      const fileContent = await file.text();
-      const result = await processUsageFile({
-        jsonData: fileContent,
-        processedHashes,
-      });
+    startTransition(async () => {
+      try {
+        const fileContent = await file.text();
+        const result = await processUsageFile({
+          jsonData: fileContent,
+          processedHashes,
+        });
 
-      if (result.errors && result.errors.length > 0) {
+        if (result.errors && result.errors.length > 0) {
+          toast({
+            variant: 'destructive',
+            title: 'خطا در اعتبارسنجی داده‌ها',
+            description: (
+              <ul className="list-disc pr-4">
+                {result.errors.map((error, index) => (
+                  <li key={index}>{error}</li>
+                ))}
+              </ul>
+            ),
+          });
+        }
+
+        if (result.newInvoices && result.newInvoices.length > 0) {
+          setProcessedHashes(result.newProcessedHashes ?? []);
+          toast({
+            title: 'پردازش موفق',
+            description: `${result.newInvoices.length} فاکتور جدید با موفقیت ایجاد شد.`,
+          });
+          handleClose();
+        } else if (!result.errors || result.errors.length === 0) {
+           toast({
+            title: 'بدون تغییر',
+            description: 'داده جدید یا قابل پردازشی در فایل یافت نشد. ممکن است داده‌ها تکراری باشند.',
+          });
+        }
+
+      } catch (error) {
         toast({
           variant: 'destructive',
-          title: 'خطا در اعتبارسنجی داده‌ها',
-          description: (
-            <ul className="list-disc pr-4">
-              {result.errors.map((error, index) => (
-                <li key={index}>{error}</li>
-              ))}
-            </ul>
-          ),
+          title: 'خطای غیرمنتظره',
+          description:
+            error instanceof Error ? error.message : 'یک خطای ناشناخته رخ داد.',
         });
+      } finally {
+        setFile(null);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
       }
-
-      if (result.newInvoices && result.newInvoices.length > 0) {
-        onNewInvoices(result.newInvoices);
-        setProcessedHashes(result.newProcessedHashes ?? []);
-        toast({
-          title: 'پردازش موفق',
-          description: `${result.newInvoices.length} فاکتور جدید با موفقیت ایجاد شد.`,
-        });
-        onOpenChange(false); // Close dialog on success
-      } else if (!result.errors || result.errors.length === 0) {
-         toast({
-          title: 'بدون تغییر',
-          description: 'داده جدید یا قابل پردازشی در فایل یافت نشد. ممکن است داده‌ها تکراری باشند.',
-        });
-      }
-
-    } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'خطای غیرمنتظره',
-        description:
-          error instanceof Error ? error.message : 'یک خطای ناشناخته رخ داد.',
-      });
-    } finally {
-      setIsProcessing(false);
-      setFile(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    }
+    });
   };
 
   const handleClose = () => {
-    if (!isProcessing) {
+    if (!isPending) {
         setFile(null);
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }
-        onOpenChange(false);
+        setIsOpen(false);
     }
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+          <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+            بارگذاری و پردازش فایل مصرف
+          </Button>
+      </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>بارگذاری و پردازش فایل مصرف</DialogTitle>
@@ -178,11 +177,11 @@ export function UploadUsageDataDialog({ isOpen, onOpenChange, onNewInvoices }: P
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={handleClose} disabled={isProcessing}>
+          <Button variant="outline" onClick={handleClose} disabled={isPending}>
             انصراف
           </Button>
-          <Button onClick={handleProcess} disabled={!file || isProcessing}>
-            {isProcessing ? (
+          <Button onClick={handleProcess} disabled={!file || isPending}>
+            {isPending ? (
               <>
                 <Loader2 className="ml-2 h-4 w-4 animate-spin" />
                 در حال پردازش...
@@ -196,4 +195,3 @@ export function UploadUsageDataDialog({ isOpen, onOpenChange, onNewInvoices }: P
     </Dialog>
   );
 }
-

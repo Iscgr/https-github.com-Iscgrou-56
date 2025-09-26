@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 import {
@@ -12,6 +12,7 @@ import {
   DialogDescription,
   DialogFooter,
   DialogClose,
+  DialogTrigger,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,9 +23,7 @@ import { addOrUpdatePartner, type PartnerFormState } from '../actions';
 import type { SalesPartner } from '@/lib/types';
 
 type Props = {
-  isOpen: boolean;
-  onOpenChange: (isOpen: boolean) => void;
-  onPartnerChanged: (partner: SalesPartner) => void;
+  children?: React.ReactNode;
   partner?: SalesPartner;
 };
 
@@ -43,16 +42,19 @@ function SubmitButton({ isEditing }: { isEditing: boolean }) {
 }
 
 
-export function PartnerFormDialog({ isOpen, onOpenChange, onPartnerChanged, partner }: Props) {
+export function PartnerFormDialog({ children, partner }: Props) {
+  const [isOpen, setIsOpen] = useState(false);
   const [state, formAction] = useActionState(addOrUpdatePartner, initialState);
   const { toast } = useToast();
+  const isEditing = !!partner;
 
   useEffect(() => {
     if (state.message && !state.errors) {
-        if(state.partner) {
-            onPartnerChanged(state.partner);
-        }
-        onOpenChange(false);
+        toast({
+            title: isEditing ? 'همکار ویرایش شد' : 'همکار اضافه شد',
+            description: state.message,
+        });
+        setIsOpen(false);
     } else if (state.message && state.errors) {
         toast({
             variant: 'destructive',
@@ -60,10 +62,13 @@ export function PartnerFormDialog({ isOpen, onOpenChange, onPartnerChanged, part
             description: 'لطفا خطاها را برطرف کرده و مجددا تلاش کنید.'
         })
     }
-  }, [state, onOpenChange, onPartnerChanged, toast]);
+  }, [state, toast, isEditing]);
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        {children ?? <Button>افزودن همکار جدید</Button>}
+      </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{partner ? 'ویرایش همکار فروش' : 'افزودن همکار فروش جدید'}</DialogTitle>
@@ -71,7 +76,7 @@ export function PartnerFormDialog({ isOpen, onOpenChange, onPartnerChanged, part
             اطلاعات همکار فروش را وارد کنید.
           </DialogDescription>
         </DialogHeader>
-        <form action={formAction}>
+        <form action={formAction} key={partner?.id || 'new'}>
             {partner && <input type="hidden" name="id" value={partner.id} />}
             <div className="space-y-4 py-4">
                 <div className="space-y-2">
@@ -89,7 +94,7 @@ export function PartnerFormDialog({ isOpen, onOpenChange, onPartnerChanged, part
                 <DialogClose asChild>
                     <Button variant="outline">انصراف</Button>
                 </DialogClose>
-                <SubmitButton isEditing={!!partner} />
+                <SubmitButton isEditing={isEditing} />
             </DialogFooter>
         </form>
       </DialogContent>

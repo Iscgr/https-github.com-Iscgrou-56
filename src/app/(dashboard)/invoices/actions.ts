@@ -7,6 +7,7 @@ import { agents, invoices } from '@/lib/data';
 import type { Invoice } from '@/lib/types';
 import { z } from 'zod';
 import { getTelegramSettings } from '@/lib/settings';
+import { revalidatePath } from 'next/cache';
 
 const ProcessUsageFileInputSchema = z.object({
   jsonData: z.string(),
@@ -16,7 +17,6 @@ type ProcessUsageFileInput = z.infer<typeof ProcessUsageFileInputSchema>;
 
 async function generateInvoiceNumber(issueDate: Date): Promise<string> {
   const year = issueDate.getFullYear();
-  // In a real app, this sequence would come from a database sequence or a counter service.
   const sequence = invoices.filter(inv => new Date(inv.date).getFullYear() === year).length + 1;
   return `MF-${year}-${sequence.toString().padStart(4, '0')}`;
 }
@@ -47,14 +47,14 @@ export async function processUsageFile(input: ProcessUsageFileInput) {
     const totalAmount = agentUsage.reduce((sum, usage) => sum + usage.usageAmount, 0);
 
     const dueDate = new Date();
-    dueDate.setDate(today.getDate() + 14); // 14 days from now
+    dueDate.setDate(today.getDate() + 14);
 
     const invoiceNumber = await generateInvoiceNumber(today);
 
     const newInvoice: Invoice = {
       id: `inv-${Date.now()}-${agentId.slice(-3)}`,
-      invoiceNumber: invoiceNumber,
-      agentId: agentId,
+      invoiceNumber,
+      agentId,
       agentName: agent.name,
       amount: totalAmount,
       date: today.toISOString().split('T')[0],
@@ -65,11 +65,17 @@ export async function processUsageFile(input: ProcessUsageFileInput) {
         amount: u.usageAmount
       }))
     };
+    
+    invoices.unshift(newInvoice);
     newInvoices.push(newInvoice);
 
-    // Update agent's debt and total sales (in-memory)
     agent.totalSales += totalAmount;
     agent.totalDebt += totalAmount;
+  }
+
+  if (newInvoices.length > 0) {
+     revalidatePath('/(dashboard)/invoices');
+     revalidatePath('/(dashboard)/agents');
   }
 
   return {
@@ -79,13 +85,12 @@ export async function processUsageFile(input: ProcessUsageFileInput) {
   };
 }
 
-const SendNotificationInputSchema = z.object({
-    invoice: z.custom<Invoice>(),
-});
-type SendNotificationInput = z.infer<typeof SendNotificationInputSchema>;
 
-export async function sendInvoiceNotification(input: SendNotificationInput) {
-    const { invoice } = input;
+export async function sendInvoiceNotificationAction(invoiceId: string) {
+    const invoice = invoices.find(inv => inv.id === invoiceId);
+    if (!invoice) {
+        return { success: false, message: 'فاکتور پیدا نشد.' };
+    }
     
     const agent = agents.find(a => a.id === invoice.agentId);
     if (!agent) {

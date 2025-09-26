@@ -1,7 +1,8 @@
 
 'use client';
 
-import { useEffect, useActionState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
+import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 import {
   Dialog,
@@ -11,6 +12,7 @@ import {
   DialogDescription,
   DialogFooter,
   DialogClose,
+  DialogTrigger,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,14 +27,11 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { recordPayment, type PaymentFormState } from '../actions';
-import type { Agent, Invoice, Payment } from '@/lib/types';
+import { agents as allAgents, invoices as allInvoices, payments } from '@/lib/data';
 
 type Props = {
-  isOpen: boolean;
-  onOpenChange: (isOpen: boolean) => void;
-  onPaymentAdded: (payment: Payment, agent: Agent, invoice: Invoice) => void;
-  agent?: Agent;
-  invoices: Invoice[];
+  children?: React.ReactNode;
+  defaultAgentId?: string;
   defaultInvoiceId?: string;
 };
 
@@ -50,53 +49,77 @@ function SubmitButton() {
     )
 }
 
-export function PaymentFormDialog({ isOpen, onOpenChange, onPaymentAdded, agent, invoices, defaultInvoiceId }: Props) {
+export function PaymentFormDialog({ children, defaultAgentId, defaultInvoiceId }: Props) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedAgentId, setSelectedAgentId] = useState(defaultAgentId || '');
   const [state, formAction] = useActionState(recordPayment, initialState);
   const { toast } = useToast();
 
+  const availableInvoices = useMemo(() => {
+    if (!selectedAgentId) return [];
+    return allInvoices.filter(i => i.agentId === selectedAgentId && i.status !== 'paid');
+  }, [selectedAgentId]);
+
   useEffect(() => {
     if (state.message && !state.errors) {
-        if(state.payment && state.updatedAgent && state.updatedInvoice) {
-            onPaymentAdded(state.payment, state.updatedAgent, state.updatedInvoice);
-        }
-        onOpenChange(false);
-    } else if (state.message && state.errors) {
+        toast({
+            title: 'پرداخت ثبت شد',
+            description: state.message,
+        });
+        setIsOpen(false);
+    } else if (state.message) {
         toast({
             variant: 'destructive',
-            title: 'خطا در فرم',
+            title: 'خطا در ثبت پرداخت',
             description: state.message
         })
     }
-  }, [state, onOpenChange, onPaymentAdded, toast]);
-  
-  if (!agent) return null;
+  }, [state, toast]);
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        {children ?? <Button>ثبت پرداخت جدید</Button>}
+      </DialogTrigger>
       <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
-          <DialogTitle>ثبت پرداخت برای {agent.name}</DialogTitle>
+          <DialogTitle>ثبت پرداخت جدید</DialogTitle>
           <DialogDescription>
             مبلغ و فاکتور مربوط به این پرداخت را مشخص کنید.
           </DialogDescription>
         </DialogHeader>
-        <form action={formAction}>
-            <input type="hidden" name="agentId" value={agent.id} />
+        <form action={formAction} key={selectedAgentId}>
             <div className="space-y-4 py-4">
+                 <div className="space-y-2">
+                    <Label htmlFor="agentId">نماینده</Label>
+                    <Select name="agentId" required value={selectedAgentId} onValueChange={setSelectedAgentId}>
+                        <SelectTrigger id="agentId">
+                            <SelectValue placeholder="یک نماینده را انتخاب کنید" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {allAgents.map(agent => (
+                                <SelectItem key={agent.id} value={agent.id}>
+                                    {agent.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    {state.errors?.agentId && <p className="text-xs text-red-500">{state.errors.agentId[0]}</p>}
+                </div>
                 <div className="space-y-2">
                     <Label htmlFor="invoiceId">فاکتور</Label>
-                    <Select name="invoiceId" required defaultValue={defaultInvoiceId}>
+                    <Select name="invoiceId" required defaultValue={defaultInvoiceId} disabled={!selectedAgentId}>
                         <SelectTrigger id="invoiceId">
                             <SelectValue placeholder="یک فاکتور پرداخت‌نشده را انتخاب کنید" />
                         </SelectTrigger>
                         <SelectContent>
-                           {invoices.length === 0 ? (
+                           {availableInvoices.length === 0 ? (
                                 <SelectItem value="none" disabled>
-                                    هیچ فاکتور پرداخت نشده‌ای برای این نماینده وجود ندارد.
+                                    {selectedAgentId ? "فاکتور پرداخت‌نشده‌ای یافت نشد." : "ابتدا یک نماینده انتخاب کنید."}
                                 </SelectItem>
-                           ) : invoices.map(invoice => (
+                           ) : availableInvoices.map(invoice => (
                                 <SelectItem key={invoice.id} value={invoice.id}>
-                                    {invoice.invoiceNumber} - مبلغ: {new Intl.NumberFormat('fa-IR').format(invoice.amount)} تومان
+                                    {invoice.invoiceNumber} - مانده: {new Intl.NumberFormat('fa-IR').format(invoice.amount - (payments.filter(p => p.invoiceId === invoice.id).reduce((sum, p) => sum + p.amount, 0)))} تومان
                                 </SelectItem>
                             ))}
                         </SelectContent>

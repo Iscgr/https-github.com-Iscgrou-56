@@ -7,7 +7,7 @@ import { revalidatePath } from 'next/cache';
 
 const PartnerFormSchema = z.object({
   id: z.string().optional(),
-  name: z.string().min(3, { message: 'نام حداقل باید ۳ کاراکتر باشد.' }),
+  name: z.string().min(2, { message: 'نام حداقل باید ۲ کاراکتر باشد.' }),
   commissionRate: z.coerce
     .number({ invalid_type_error: 'نرخ کمیسیون باید عدد باشد.' })
     .min(0, { message: 'نرخ کمیسیون نمی‌تواند منفی باشد.' })
@@ -20,22 +20,19 @@ export type PartnerFormState = {
     name?: string[];
     commissionRate?: string[];
   };
-  partner?: SalesPartner;
-} | {
-  message: string;
-  partner?: SalesPartner;
-  errors?: undefined;
 }
 
 export async function addOrUpdatePartner(
   prevState: PartnerFormState,
   formData: FormData
 ): Promise<PartnerFormState> {
-  const validatedFields = PartnerFormSchema.safeParse({
-    id: formData.get('id'),
+  const rawData = {
+    id: formData.get('id') || undefined,
     name: formData.get('name'),
     commissionRate: formData.get('commissionRate'),
-  });
+  };
+  
+  const validatedFields = PartnerFormSchema.safeParse(rawData);
 
   if (!validatedFields.success) {
     return {
@@ -51,12 +48,11 @@ export async function addOrUpdatePartner(
       // Update existing partner
       const partnerIndex = salesPartners.findIndex(p => p.id === id);
       if (partnerIndex > -1) {
-        const updatedPartner = { ...salesPartners[partnerIndex], name, commissionRate };
-        salesPartners[partnerIndex] = updatedPartner;
+        salesPartners[partnerIndex] = { ...salesPartners[partnerIndex], name, commissionRate };
         revalidatePath('/(dashboard)/partners');
-        return { message: `همکار فروش ${name} با موفقیت ویرایش شد.`, partner: updatedPartner };
+        return { message: `همکار فروش ${name} با موفقیت ویرایش شد.` };
       } else {
-        return { message: 'همکار فروش یافت نشد.' };
+        return { message: 'خطا: همکار فروش یافت نشد.' };
       }
     } else {
       // Add new partner
@@ -64,11 +60,11 @@ export async function addOrUpdatePartner(
         id: `partner-${Date.now()}`,
         name,
         commissionRate,
-        totalSubAgentSales: 0,
+        totalSubAgentSales: 0, 
       };
       salesPartners.unshift(newPartner);
       revalidatePath('/(dashboard)/partners');
-      return { message: `همکار فروش ${name} با موفقیت اضافه شد.`, partner: newPartner };
+      return { message: `همکار فروش ${name} با موفقیت اضافه شد.` };
     }
   } catch (error) {
     return {
