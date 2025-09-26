@@ -1,4 +1,4 @@
-import PageHeader from '@/components/page-header';
+import { PageHeader } from '@/components/page-header';
 import { InvoiceTable } from './_components/invoice-table';
 import { UploadUsageDataDialog } from './_components/upload-usage-data-dialog';
 

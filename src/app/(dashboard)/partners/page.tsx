@@ -1,4 +1,4 @@
-import PageHeader from '@/components/page-header';
+import { PageHeader } from '@/components/page-header';
 import { PartnersClientPage } from './_components/partners-client-page';
 import { getSalesPartners } from '@/lib/data';
 
