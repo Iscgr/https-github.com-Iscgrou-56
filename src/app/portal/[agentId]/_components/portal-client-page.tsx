@@ -1,8 +1,8 @@
 
 'use client';
 
-import { useState } from 'react';
-import { PageHeader } from '@/components/page-header';
+import { useState, useEffect } from 'react';
+import type { Agent, Invoice, Payment, SalesPartner } from '@/lib/types';
 import {
   Card,
   CardContent,
@@ -17,149 +17,208 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import {
+  DollarSign,
+  ReceiptText,
+  CreditCard,
+  Percent,
+  ClipboardList,
+  History,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { DollarSign, Scale, Receipt } from 'lucide-react';
-import type { Agent, Invoice, Payment } from '@/lib/types';
-import { PaymentFormDialog } from '@/app/(dashboard)/payments/_components/payment-form-dialog';
-import { useToast } from '@/hooks/use-toast';
-import { invoices as allInvoices } from '@/lib/data';
+import { Logo } from '@/components/logo';
 
-const statusMap: Record<Invoice['status'], { label: string; className: string }> = {
-  paid: { label: 'پرداخت شده', className: 'text-green-400 bg-green-500/20 border-green-500/20' },
-  unpaid: { label: 'پرداخت نشده', className: 'text-red-400 bg-red-500/20 border-red-500/20' },
-  partial: { label: 'تسویه جزیی', className: 'text-yellow-400 bg-yellow-500/20 border-yellow-500/20' },
-  overdue: { label: 'سررسید گذشته', className: 'text-orange-400 bg-orange-500/20 border-orange-500/20' },
-  cancelled: { label: 'لغو شده', className: 'text-gray-400 bg-gray-500/20 border-gray-500/20' },
+// Helper component for stat cards
+const StatCard = ({ title, value, icon: Icon, description, valueClassName }: { title: string, value: string, icon: React.ElementType, description?: string, valueClassName?: string }) => (
+  <Card className="bg-surface border-gray-700">
+    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <CardTitle className="text-sm font-medium text-gray-300">{title}</CardTitle>
+      <Icon className="h-4 w-4 text-gray-400" />
+    </CardHeader>
+    <CardContent>
+      <div className={cn("text-3xl font-bold font-mono text-white", valueClassName)}>
+        {value}
+      </div>
+      {description && <p className="text-xs text-gray-400 pt-1">{description}</p>}
+    </CardContent>
+  </Card>
+);
+
+// Helper to format currency
+const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat('fa-IR').format(amount);
 };
 
+
 type PortalClientPageProps = {
-    initialAgent: Agent;
-    initialInvoices: Invoice[];
-    initialPayments: Payment[];
-}
+  initialAgent: Agent;
+  initialInvoices: Invoice[];
+  initialPayments: Payment[];
+  partner: SalesPartner | undefined;
+};
 
-export default function PortalClientPage({ initialAgent, initialInvoices, initialPayments }: PortalClientPageProps) {
-  const [agent, setAgent] = useState<Agent>(initialAgent);
-  const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices);
-  const [payments, setPayments] = useState<Payment[]>(initialPayments);
-  const [isPaymentFormOpen, setIsPaymentFormOpen] = useState(false);
-  const { toast } = useToast();
+export function PortalClientPage({
+  initialAgent,
+  initialInvoices,
+  initialPayments,
+  partner,
+}: PortalClientPageProps) {
   
+  const [agent] = useState<Agent>(initialAgent);
+  const [invoices] = useState<Invoice[]>(initialInvoices);
+  const [payments] = useState<Payment[]>(initialPayments);
+  const [isClient, setIsClient] = useState(false);
 
-  const handlePaymentAdded = (newPayment: Payment, updatedAgent: Agent, updatedInvoice: Invoice) => {
-     setPayments(prev => [newPayment, ...prev].sort((a,b) => Date.parse(b.date) - Date.parse(a.date)));
-     setAgent(updatedAgent);
-     setInvoices(prev => prev.map(i => i.id === updatedInvoice.id ? updatedInvoice : i));
-     toast({
-        title: 'پرداخت جدید ثبت شد',
-        description: `پرداخت به مبلغ ${new Intl.NumberFormat('fa-IR').format(newPayment.amount)} برای نماینده ${updatedAgent.name} ثبت شد.`,
-     });
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+  
+  const totalPayments = payments.reduce((sum, p) => sum + p.amount, 0);
+  const commission = partner ? (agent.totalSales * partner.commissionRate) / 100 : 0;
+
+  const getStatusBadge = (status: Invoice['status']) => {
+    switch (status) {
+      case 'paid':
+        return <Badge className="bg-green-500/10 text-green-400 border-green-500/20 font-sans">پرداخت شده</Badge>;
+      case 'partial':
+        return <Badge className="bg-yellow-500/10 text-yellow-400 border-yellow-500/20 font-sans">تسویه جزیی</Badge>;
+      case 'overdue':
+        return <Badge className="bg-orange-500/10 text-orange-400 border-orange-500/20 font-sans">سررسید گذشته</Badge>;
+      case 'unpaid':
+        return <Badge className="bg-red-500/10 text-red-400 border-red-500/20 font-sans">پرداخت نشده</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
   };
 
-  const summaryData = [
-    { title: 'کل بدهی', value: `${new Intl.NumberFormat('fa-IR').format(agent.totalDebt)} تومان`, icon: Scale },
-    { title: 'کل فروش', value: `${new Intl.NumberFormat('fa-IR').format(agent.totalSales)} تومان`, icon: DollarSign },
-    { title: 'کل پرداخت‌ها', value: `${new Intl.NumberFormat('fa-IR').format(agent.totalPayments)} تومان`, icon: Receipt },
-  ];
-
   return (
-    <>
-      <PaymentFormDialog
-        isOpen={isPaymentFormOpen}
-        onOpenChange={setIsPaymentFormOpen}
-        onPaymentAdded={handlePaymentAdded}
-        agent={agent}
-        invoices={invoices.filter(i => i.status === 'unpaid' || i.status === 'partial' || i.status === 'overdue')}
-      />
-
-      <div className="space-y-8">
-        <PageHeader title={`پورتال مالی ${agent.name}`}>
-            <div className="flex items-center gap-4">
-                <div className="text-sm text-muted-foreground font-code">کد نماینده: {agent.code}</div>
-                <Button onClick={() => setIsPaymentFormOpen(true)}>ثبت پرداخت</Button>
+    <div className="bg-[#0d1117] min-h-screen text-gray-300 p-4 sm:p-6 md:p-8">
+      <div className="max-w-7xl mx-auto">
+        
+        {/* Header */}
+        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+          <div className='flex items-center gap-4'>
+            <Logo className="h-10 w-10 text-white" />
+            <div>
+              <h1 className="text-2xl font-bold text-white">{agent.name}</h1>
+              <p className="font-mono text-cyan-400">{agent.code}</p>
             </div>
-        </PageHeader>
+          </div>
+          <div className="text-left sm:text-right">
+            <p className="text-sm">پرتال عمومی نماینده</p>
+            <p className="text-xs text-gray-500">آخرین بروزرسانی: لحظاتی پیش</p>
+          </div>
+        </header>
 
-        <div className="grid gap-4 md:grid-cols-3">
-          {summaryData.map(item => (
-              <Card key={item.title}>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">{item.title}</CardTitle>
-                      <item.icon className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                      <div className="text-2xl font-bold font-code">{item.value}</div>
-                  </CardContent>
-              </Card>
-          ))}
+        {/* Main Stats Grid */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+          <StatCard 
+            title="مجموع فروش"
+            value={formatCurrency(agent.totalSales)}
+            icon={DollarSign}
+            description="تومان"
+          />
+          <StatCard 
+            title="بدهی کل"
+            value={formatCurrency(agent.totalDebt)}
+            icon={ReceiptText}
+            description="تومان"
+            valueClassName="text-red-400"
+          />
+          <StatCard 
+            title="پرداختی‌ها"
+            value={formatCurrency(totalPayments)}
+            icon={CreditCard}
+            description="تومان"
+             valueClassName="text-green-400"
+          />
+          <StatCard 
+            title="کمیسیون"
+            value={formatCurrency(commission)}
+            icon={Percent}
+            description={`بر اساس ${partner?.commissionRate}% از فروش`}
+            valueClassName="text-cyan-400"
+          />
         </div>
 
-        <Card>
+        {/* Activity History */}
+        <Card className="bg-surface border-gray-700 rounded-xl">
           <CardHeader>
-            <CardTitle>تاریخچه فاکتورها</CardTitle>
+            <CardTitle className="text-white">تاریخچه فعالیت</CardTitle>
+            <CardDescription className="text-gray-400">صورتحساب‌ها و پرداخت‌های ثبت شده برای شما.</CardDescription>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>شماره فاکتور</TableHead>
-                  <TableHead>تاریخ صدور</TableHead>
-                  <TableHead>مبلغ</TableHead>
-                  <TableHead>وضعیت</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {invoices.length === 0 ? (
-                  <TableRow><TableCell colSpan={4} className="text-center h-24">هیچ فاکتوری یافت نشد.</TableCell></TableRow>
-                ) : invoices.map((invoice) => (
-                  <TableRow key={invoice.id}>
-                    <TableCell className="font-code">{invoice.invoiceNumber}</TableCell>
-                    <TableCell className="font-code">{invoice.date}</TableCell>
-                    <TableCell className="font-code">{new Intl.NumberFormat('fa-IR').format(invoice.amount)} تومان</TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className={cn(statusMap[invoice.status].className, 'hover:bg-none')}>
-                        {statusMap[invoice.status].label}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <Tabs defaultValue="invoices" dir="rtl">
+              <TabsList className="grid w-full grid-cols-2 bg-[#0d1117]">
+                <TabsTrigger value="invoices"><ClipboardList className="ml-2 h-4 w-4" />صورتحساب‌ها</TabsTrigger>
+                <TabsTrigger value="payments"><History className="ml-2 h-4 w-4" />پرداخت‌ها</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="invoices" className="mt-4">
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-gray-700 hover:bg-gray-800/20">
+                        <TableHead className="text-right text-gray-300">شماره</TableHead>
+                        <TableHead className="text-right text-gray-300">تاریخ صدور</TableHead>
+                        <TableHead className="text-right text-gray-300">مبلغ کل</TableHead>
+                        <TableHead className="text-right text-gray-300">بدهی</TableHead>
+                        <TableHead className="text-center text-gray-300">وضعیت</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {invoices.map(invoice => (
+                        <TableRow key={invoice.id} className="border-gray-700 hover:bg-gray-800/20">
+                          <TableCell className="text-right font-mono text-cyan-400">{invoice.invoiceNumber}</TableCell>
+                          <TableCell className="text-right font-mono">{isClient ? new Date(invoice.date).toLocaleDateString('fa-IR') : '...'}</TableCell>
+                          <TableCell className="text-right font-mono">{formatCurrency(invoice.amount)}</TableCell>
+                          <TableCell className="text-right font-mono text-red-400">{formatCurrency(invoice.debt)}</TableCell>
+                          <TableCell className="text-center">{getStatusBadge(invoice.status)}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="payments" className="mt-4">
+                 <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="border-gray-700 hover:bg-gray-800/20">
+                          <TableHead className="text-right text-gray-300">تاریخ</TableHead>
+                          <TableHead className="text-right text-gray-300">مبلغ</TableHead>
+                          <TableHead className="text-right text-gray-300">فاکتور مرتبط</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {payments.map(payment => (
+                          <TableRow key={payment.id} className="border-gray-700 hover:bg-gray-800/20">
+                            <TableCell className="text-right font-mono">{isClient ? new Date(payment.date).toLocaleDateString('fa-IR'): '...'}</TableCell>
+                            <TableCell className="text-right font-mono text-green-400">{formatCurrency(payment.amount)}</TableCell>
+                            <TableCell className="text-right font-mono text-cyan-400">{payment.invoiceId}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                 </div>
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>تاریخچه پرداخت‌ها</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>تاریخ</TableHead>
-                  <TableHead>مبلغ</TableHead>
-                  <TableHead>مربوط به فاکتور</TableHead>
-                  <TableHead>شماره مرجع</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {payments.length === 0 ? (
-                  <TableRow><TableCell colSpan={4} className="text-center h-24">هیچ پرداختی یافت نشد.</TableCell></TableRow>
-                ) : payments.map((payment) => (
-                  <TableRow key={payment.id}>
-                    <TableCell className="font-code">{payment.date}</TableCell>
-                    <TableCell className="font-code text-green-400">{new Intl.NumberFormat('fa-IR').format(payment.amount)} تومان</TableCell>
-                    <TableCell className="font-code">{allInvoices.find(i => i.id === payment.invoiceId)?.invoiceNumber || '---'}</TableCell>
-                    <TableCell className="font-code">{payment.referenceNumber || '---'}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+        {/* Footer */}
+        <footer className="text-center mt-8 text-xs text-gray-500">
+            <p>کلیه حقوق این سامانه محفوظ است.</p>
+        </footer>
       </div>
-    </>
+    </div>
   );
 }
