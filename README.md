@@ -142,4 +142,3 @@ The user interface is designed to be professional, focused, and visually coheren
 ### Typography
 - **Primary Font:** **Vazirmatn** (a modern, highly-readable Persian sans-serif font).
 - **Monospace Font:** System Monospace (for IDs, dates, and tabular data).
-```
