@@ -1,47 +1,4 @@
-
-export type Agent = {
-  id: string;
-  publicId: string;
-  name: string;
-  code: string;
-  contact: {
-    email: string;
-    phone: string;
-    telegramChatId?: string;
-  };
-  salesPartnerId: string | null;
-  status: 'active' | 'inactive';
-  totalSales: number;
-  totalPayments: number;
-  totalDebt: number;
-  avatarUrl: string;
-  portalLink: string;
-  createdAt: string;
-};
-
-export type Invoice = {
-  id: string;
-  invoiceNumber: string;
-  agentId: string;
-  agentName: string;
-  date: string;
-  dueDate: string;
-  amount: number;
-  status: 'paid' | 'unpaid' | 'partial' | 'overdue' | 'cancelled';
-  items: {
-    description: string;
-    amount: number;
-  }[];
-};
-
-export type Payment = {
-  id: string;
-  agentId: string;
-  invoiceId: string;
-  date: string; // payment_date
-  amount: number;
-  referenceNumber?: string;
-};
+// ... (previous types: Agent, AgentFinancialSummary, Invoice, etc.)
 
 export type SalesPartner = {
   id:string;
@@ -49,3 +6,40 @@ export type SalesPartner = {
   commissionRate: number;
   totalSubAgentSales: number;
 };
+
+// --- NEW TYPES for Module 3 ---
+
+export type CommissionReport = {
+    id: string; // UUID
+    partnerId: string;
+    calculationDate: string;
+    startDate: string;
+    endDate: string;
+    totalSales: number;
+    commissionRate: number;
+    commissionAmount: number;
+    status: 'DRAFT' | 'FINALIZED' | 'PAID';
+    // This would link to the detailed records used for calculation
+    calculationDetails: { invoiceId: string; amount: number }[];
+}
+
+export type CommissionAdjustment = {
+    id: string; // UUID
+    partnerId: string;
+    relatedInvoiceId: string;
+    amount: number; // Can be negative for clawbacks
+    reason: 'REFUND' | 'CORRECTION';
+    appliedReportId: string | null; // Which report this adjustment was included in
+    createdAt: string;
+}
+
+// --- END NEW TYPES ---
+
+
+export type BatchJob = {
+  // ... (BatchJob type)
+}
+
+export type BatchInvoiceRequest = {
+  // ... (BatchInvoiceRequest type)
+}

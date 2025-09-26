@@ -11,6 +11,10 @@
 - AI-Powered Financial Anomaly Detection: (قابلیت آینده) پیاده‌سازی یک Genkit Flow مجهز به مدل Gemini برای تحلیل الگوهای پرداخت و بدهی نمایندگان. شناسایی خودکار ناهنجاری‌ها، مانند افزایش ناگهانی بدهی یا تأخیر غیرمعمول در پرداخت‌ها، و ارسال هشدار هوشمند به ادمین سیستم جهت بررسی بیشتر.
 - server-client application: full stack application
 
+## Architectural Principles:
+
+- **CQRS for Agent List View (Item 2.2):** To ensure fast load times for the agent list, the system uses a CQRS pattern. The main agent list is populated from a pre-calculated `AgentFinancialSummaries` table (Read Model). This table is the **Source of Truth for UI display purposes ONLY**. All official financial reports, audits, or detailed views **MUST** query the primary `Invoices` and `Payments` tables (Write Model) directly to guarantee data consistency and accuracy.
+
 ## Style Guidelines:
 
 - پس‌زمینه اصلی (Primary Background): ذغالی تیره (#0d1117) – رنگ اصلی پس‌زمینه اپلیکیشن که فضایی متمرکز و حرفه‌ای ایجاد می‌کند.
@@ -25,7 +29,7 @@
 - خطا/بدهی/پرداخت نشده: قرمز (text-red-400).
 - سررسید گذشته: نارنجی (text-orange-400).
 - اطلاعاتی: فیروزه‌ای (text-cyan-400).
-- فونت اصلی: Vazirmatn – یک فونت سنس-سریف مدرن و بسیار خوانا برای زبان فارسی که در تمام بخش‌های رابط کاربری (عناوین، متن بدنه و دکمه‌ها) استفاده می‌شود.
+- فونت اصلی: Vazirmatn – یک فونت سنس-سریف مدرن و بسیار خوانا برای زبان فارسی که در تمام بخش‌های رابط کاربری (عناوین، متن بدنه و دکame="Architectural Principles"
 - فونت مونو اسپیس (Monospace): فونت پیش‌فرض سیستمی (font-mono) برای نمایش شناسه‌ها، تاریخ‌ها، مبالغ و داده‌های جدولی که نیاز به هم‌ترازی عمودی دارند.
 - مجموعه‌ای یکپارچه از آیکون‌های SVG با استایل Outline و طراحی مینیمال (مشابه Heroicons) که به صورت بصری، عملکرد دکمه‌ها و آیتم‌های منو را روشن می‌سازند.
 - طراحی مبتنی بر گرید سیستم و مقیاس فاصله‌گذاری استاندارد Tailwind CSS برای تضمین هماهنگی در پدینگ، مارجین و فواصل بین عناصر.

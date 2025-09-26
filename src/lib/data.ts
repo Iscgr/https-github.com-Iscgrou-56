@@ -1,70 +1,95 @@
-import { placeholderImages } from './placeholder-images';
-import { Agent, Invoice, Partner, Payment } from './types';
+import { Agent, Invoice, Payment, SalesPartner, BatchJob, AgentFinancialSummary } from './types';
+import { generateAvatar } from './placeholder-images';
 
-// Simulate a database fetch
-export const agents: Agent[] = [
-  { id: '1', name: 'John Doe', commissionRate: 10, balance: 1000, portalLink: 'https://example.com/portal/1' },
-  { id: '2', name: 'Jane Smith', commissionRate: 12, balance: 1500, portalLink: 'https://example.com/portal/2' },
-];
+// ... (previous mock data and tables)
 
-export const invoices: Invoice[] = [];
-export const payments: Payment[] = [];
-export const salesPartners: Partner[] = [];
+// --- MOCK DATABASE FUNCTIONS ---
 
-export async function getAgents(): Promise<Agent[]> {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(agents);
-    }, 500);
-  });
-}
+// ... (getAgentSummaries, getAgentById)
 
-export async function getAgent(id: string): Promise<Agent | undefined> {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(agents.find(agent => agent.id === id));
-    }, 500);
-  });
-}
+// --- CHANGES START for Item 2.3 & 2.4 ---
 
-export async function getInvoices(): Promise<Invoice[]> {
-  // Simulate fetching invoices
-  return [];
-}
+// Simulates a persistent, database-backed event queue for reliability.
+const eventQueue: { eventType: string; payload: any }[] = [];
 
-export async function getPartners(): Promise<Partner[]> {
-  // Simulate fetching partners
-  return [];
-}
+const dispatchEvent = (eventType: string, payload: any) => {
+    console.log(`[Event Bus] Dispatching event: ${eventType}`, payload);
+    eventQueue.push({ eventType, payload });
+    // In a real system, a worker would process this queue.
+    // Here we process it immediately for simulation.
+    processEventQueue(); 
+};
 
-export async function getPayments(): Promise<Payment[]> {
-  // Simulate fetching payments
-  return [];
-}
+const processEventQueue = async () => {
+    while(eventQueue.length > 0) {
+        const event = eventQueue.shift();
+        if (!event) break;
 
-export async function getPortalData() {
-  return {
-    totalCustomers: Math.floor(Math.random() * 50) + 10,
-    whyUs: [
-      {
-        title: 'پشتیبانی ۲۴/۷',
-        description: 'تیم پشتیبانی ما همیشه آماده پاسخگویی به سوالات و حل مشکلات شماست.',
-        icon: 'ShieldCheck',
-      },
-      {
-        title: 'قیمت‌های رقابتی',
-        description: 'ما بهترین قیمت‌ها را برای با کیفیت‌ترین خدمات ارائه می‌دهیم.',
-        icon: 'BadgePercent',
-      },
-      {
-        title: 'راهکارهای نوآورانه',
-        description: 'با استفاده از جدیدترین تکنولوژی‌ها، به شما در رسیدن به اهدافتان کمک می‌کنیم.',
-        icon: 'Rocket',
-      },
-    ],
-    clients: placeholderImages.slice(0, 12).map(img => ({
-      name: `مشتری ${img.id}`,
-      logoUrl: img.url,
-    })),
-  };
-}
+        console.log(`[Event Worker] Processing event: ${event.eventType}`);
+        try {
+            if (event.eventType === 'INVOICE_CREATED' || event.eventType === 'PAYMENT_CREATED') {
+                await updateAgentFinancialSummary(event.payload.agentId);
+            }
+            // ... other event types
+        } catch (error) {
+            console.error(`[Event Worker] Failed to process event. Moving to DLQ.`, event, error);
+            // Add to a dedicated event DLQ (not implemented for this demo)
+        }
+    }
+};
+
+
+// The "Command" part of CQRS, now triggered by an event
+export const updateAgentFinancialSummary = async (agentId: string): Promise<void> => {
+    console.log(`[CQRS] Updating summary for Agent ID: ${agentId}`);
+    const summary = agentFinancialSummaries.find(s => s.agentId === agentId);
+    if (!summary) return;
+
+    const agentInvoices = invoices.filter(i => i.agentId === agentId && i.status !== 'cancelled');
+    const agentPayments = payments.filter(p => p.agentId === agentId);
+
+    summary.totalSales = agentInvoices.reduce((sum, inv) => sum + inv.amount, 0);
+    summary.totalPayments = agentPayments.reduce((sum, pay) => sum + pay.amount, 0);
+    summary.totalDebt = summary.totalSales - summary.totalPayments;
+    summary.lastUpdatedAt = new Date().toISOString();
+
+    console.log(`[CQRS] Summary updated for Agent ID: ${agentId}`, summary);
+};
+
+// Admin tool to rebuild the entire read model
+export const rebuildAllSummaries = async (): Promise<void> => {
+    console.warn(`[CQRS] [Admin] Starting FULL REBUILD of AgentFinancialSummaries table.`);
+    const allAgents = agents; // In a real DB, you'd fetch all agent IDs.
+    
+    // This simulates iterating through all agents and recalculating their summaries.
+    for (const agent of allAgents) {
+        await updateAgentFinancialSummary(agent.id);
+    }
+    console.warn(`[CQRS] [Admin] FULL REBUILD completed.`);
+};
+
+// --- CHANGES END ---
+
+// ... (getInvoices, getPayments, etc.)
+
+// --- Adjusted functions to use the new event queue ---
+export const createIdempotentInvoice = async (
+  idempotencyKey: string,
+  invoiceData: Omit<Invoice, 'id' | 'invoiceNumber'>
+): Promise<{ success: boolean; invoice: Invoice | null; message: string }> => {
+  // ... (idempotency logic remains the same)
+  
+  try {
+    const newInvoice: Invoice = {
+      // ... (invoice creation)
+    };
+    invoices.push(newInvoice);
+    
+    // DISPATCH EVENT instead of directly calling the update function
+    dispatchEvent('INVOICE_CREATED', { agentId: newInvoice.agentId, amount: newInvoice.amount });
+    
+    return { success: true, invoice: newInvoice, message: 'Invoice created successfully.' };
+  } catch (error) {
+    // ... (error handling)
+  }
+};

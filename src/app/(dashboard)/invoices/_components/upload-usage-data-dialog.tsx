@@ -1,193 +1,138 @@
-
 'use client';
 
-import { useState, useRef, useTransition } from 'react';
+import { useState, useTransition } from 'react';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Upload } from 'lucide-react';
-import { processUsageFile } from '../actions';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { uploadInvoicesAction } from '../actions';
+import { FileUp, Loader2 } from 'lucide-react';
+
+// This is a mock parser for demo purposes. In a real app, you'd use a library like SheetJS or PapaParse.
+const mockParseFile = (file: File): Promise<any[]> => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                // Assuming the file is a simple JSON array of objects for this demo
+                const content = event.target?.result as string;
+                const data = JSON.parse(content);
+                if (!Array.isArray(data)) {
+                    throw new Error("File content must be a JSON array.");
+                }
+                resolve(data);
+            } catch (error) {
+                reject(error);
+            }
+        };
+        reader.onerror = (error) => reject(error);
+        reader.readAsText(file);
+    });
+};
+
 
 export function UploadUsageDataDialog() {
   const [isOpen, setIsOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [isPending, startTransition] = useTransition();
-  const [processedHashes, setProcessedHashes] = useState<string[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = event.target.files?.[0];
-    if (selectedFile) {
-      if (selectedFile.type === 'application/json') {
-        setFile(selectedFile);
-      } else {
-        toast({
-          variant: 'destructive',
-          title: 'خطا در نوع فایل',
-          description: 'لطفا یک فایل با فرمت JSON انتخاب کنید.',
-        });
-        setFile(null);
-      }
+    if (event.target.files) {
+      setFile(event.target.files[0]);
     }
   };
 
-  const handleUploadClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleProcess = () => {
+  const handleSubmit = async () => {
     if (!file) {
       toast({
         variant: 'destructive',
-        title: 'فایلی انتخاب نشده است',
-        description: 'لطفا ابتدا یک فایل مصرف را انتخاب کنید.',
+        title: 'خطا',
+        description: 'لطفاً ابتدا یک فایل را انتخاب کنید.',
       });
       return;
     }
 
     startTransition(async () => {
       try {
-        const fileContent = await file.text();
-        const result = await processUsageFile({
-          jsonData: fileContent,
-          processedHashes,
-        });
+        // In a real application, you would parse the file content here before sending.
+        // For this demo, we'll simulate parsing a JSON file.
+        const fileContent = await mockParseFile(file);
 
-        if (result.errors && result.errors.length > 0) {
+        const result = await uploadInvoicesAction(fileContent);
+
+        if (result.success) {
           toast({
-            variant: 'destructive',
-            title: 'خطا در اعتبارسنجی داده‌ها',
-            description: (
-              <ul className="list-disc pr-4">
-                {result.errors.map((error, index) => (
-                  <li key={index}>{error}</li>
-                ))}
-              </ul>
-            ),
+            title: 'عملیات موفق',
+            description: result.message,
           });
+          setIsOpen(false);
+          setFile(null);
+        } else {
+          throw new Error(result.message);
         }
-
-        if (result.newInvoices && result.newInvoices.length > 0) {
-          setProcessedHashes(result.newProcessedHashes ?? []);
-          toast({
-            title: 'پردازش موفق',
-            description: `${result.newInvoices.length} فاکتور جدید با موفقیت ایجاد شد.`,
-          });
-          handleClose();
-        } else if (!result.errors || result.errors.length === 0) {
-           toast({
-            title: 'بدون تغییر',
-            description: 'داده جدید یا قابل پردازشی در فایل یافت نشد. ممکن است داده‌ها تکراری باشند.',
-          });
-        }
-
-      } catch (error) {
+      } catch (error: any) {
         toast({
           variant: 'destructive',
-          title: 'خطای غیرمنتظره',
-          description:
-            error instanceof Error ? error.message : 'یک خطای ناشناخته رخ داد.',
+          title: 'پردازش فایل با خطا مواجه شد',
+          description: `جزئیات خطا: ${error.message}`,
         });
-      } finally {
-        setFile(null);
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
-        }
       }
     });
   };
 
-  const handleClose = () => {
-    if (!isPending) {
-        setFile(null);
-        if (fileInputRef.current) {
-            fileInputRef.current.value = '';
-        }
-        setIsOpen(false);
-    }
-  }
-
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-          <Button className="bg-purple-600 hover:bg-purple-700 text-white">
-            بارگذاری و پردازش فایل مصرف
-          </Button>
+        <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+          <FileUp className="mr-2 h-4 w-4" />
+          آپلود فایل فاکتورها
+        </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[425px] bg-gray-800 border-gray-700 text-gray-200">
         <DialogHeader>
-          <DialogTitle>بارگذاری و پردازش فایل مصرف</DialogTitle>
+          <DialogTitle className="text-white">آپلود دسته‌ای فاکتورها</DialogTitle>
           <DialogDescription>
-            فایل JSON حاوی داده‌های مصرف نمایندگان را برای صدور فاکتور خودکار انتخاب و بارگذاری کنید.
+            یک فایل (با فرمت JSON) حاوی اطلاعات فاکتورها را برای پردازش انتخاب کنید.
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4 py-4">
-            <Alert>
-                <AlertTitle className="font-semibold">راهنمای فرمت JSON</AlertTitle>
-                <AlertDescription>
-                    <p>فایل شما باید آرایه‌ای از آبجکت‌ها با ساختار زیر باشد:</p>
-                    <pre className="mt-2 rounded-md bg-muted p-2 text-xs font-code ltr text-left">{`[
-  {
-    "agentId": "agent-1",
-    "usageType": "calls",
-    "usageAmount": 120.50,
-    "billingPeriodStart": "2023-10-01",
-    "billingPeriodEnd": "2023-10-31"
-  }
-]`}</pre>
-                </AlertDescription>
-            </Alert>
-          <div className="space-y-2">
-            <Label htmlFor="usage-file">فایل مصرف (JSON)</Label>
-            <div
-              className="flex items-center justify-center w-full p-4 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted"
-              onClick={handleUploadClick}
-            >
-              <div className="text-center">
-                <Upload className="mx-auto h-8 w-8 text-muted-foreground" />
-                {file ? (
-                  <p className="mt-2 text-sm font-medium">{file.name}</p>
-                ) : (
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    برای انتخاب فایل اینجا کلیک کنید
-                  </p>
-                )}
-              </div>
-            </div>
+        <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="invoice-file" className="text-right">
+              فایل
+            </Label>
             <Input
-              id="usage-file"
+              id="invoice-file"
               type="file"
-              accept=".json"
               onChange={handleFileChange}
-              className="hidden"
-              ref={fileInputRef}
+              className="col-span-3 bg-gray-900 border-gray-600 file:text-purple-400"
+              accept=".json"
             />
           </div>
+          {file && <p className="text-sm text-cyan-400 text-center">فایل انتخاب شده: {file.name}</p>}
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={handleClose} disabled={isPending}>
-            انصراف
-          </Button>
-          <Button onClick={handleProcess} disabled={!file || isPending}>
+          <Button
+            onClick={handleSubmit}
+            disabled={isPending || !file}
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600"
+          >
             {isPending ? (
               <>
-                <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 در حال پردازش...
               </>
             ) : (
-              'پردازش فایل'
+              'شروع پردازش'
             )}
           </Button>
         </DialogFooter>
