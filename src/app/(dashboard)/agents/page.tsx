@@ -1,8 +1,11 @@
 
-import Image from "next/image";
-import { MoreHorizontal } from "lucide-react";
-import { PageHeader } from "@/components/page-header";
-import { Button } from "@/components/ui/button";
+'use client';
+
+import { useState } from 'react';
+import Image from 'next/image';
+import { MoreHorizontal } from 'lucide-react';
+import { PageHeader } from '@/components/page-header';
+import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
@@ -10,26 +13,48 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { agents } from "@/lib/data";
-import { cn } from "@/lib/utils";
-import Link from "next/link";
+} from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { agents as initialAgents } from '@/lib/data';
+import type { Agent } from '@/lib/types';
+import { cn } from '@/lib/utils';
+import Link from 'next/link';
+import { AgentFormDialog } from './_components/agent-form-dialog';
+import { useToast } from '@/hooks/use-toast';
 
 export default function AgentsPage() {
+  const [agents, setAgents] = useState<Agent[]>(initialAgents);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const { toast } = useToast();
+
+  const handleAgentAdded = (newAgent: Agent) => {
+    setAgents(prev => [newAgent, ...prev]);
+    toast({
+      title: 'نماینده جدید اضافه شد',
+      description: `نماینده "${newAgent.name}" با موفقیت به لیست اضافه شد.`,
+    });
+  };
+
   return (
     <>
       <PageHeader title="مدیریت نمایندگان">
-        <Button>افزودن نماینده جدید</Button>
+        <Button onClick={() => setIsFormOpen(true)}>افزودن نماینده جدید</Button>
       </PageHeader>
+
+      <AgentFormDialog
+        isOpen={isFormOpen}
+        onOpenChange={setIsFormOpen}
+        onAgentAdded={handleAgentAdded}
+      />
+
       <Card>
         <CardContent>
           <Table>
