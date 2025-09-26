@@ -133,7 +133,7 @@ export default function PortalClientPage({ initialAgent, initialInvoices, initia
         <Card>
           <CardHeader>
             <CardTitle>تاریخچه پرداخت‌ها</CardTitle>
-          </Header>
+          </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
