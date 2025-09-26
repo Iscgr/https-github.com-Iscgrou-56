@@ -1,3 +1,4 @@
+
 import type { Agent, Invoice, SalesPartner, Payment } from './types';
 
 export const agents: Agent[] = [
@@ -15,7 +16,7 @@ export const agents: Agent[] = [
   {
     id: 'agent-2',
     name: 'نماینده دو',
-    contact: { email: 'agent2@example.com', phone: '09123456782' },
+    contact: { email: 'agent2@example.com', phone: '09123456782', telegramChatId: '123456789' }, // Example specific chat ID
     salesPartnerId: 'partner-1',
     status: 'active',
     totalSales: 25000000,
@@ -102,3 +103,4 @@ export const payments: Payment[] = [
 export const getAgentById = (id: string) => agents.find(a => a.id === id);
 export const getInvoicesByAgentId = (agentId: string) => invoices.filter(i => i.agentId === agentId);
 export const getPaymentsByAgentId = (agentId: string) => payments.filter(p => p.agentId === agentId);
+

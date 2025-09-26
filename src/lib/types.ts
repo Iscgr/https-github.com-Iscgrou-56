@@ -1,9 +1,11 @@
+
 export type Agent = {
   id: string;
   name: string;
   contact: {
     email: string;
     phone: string;
+    telegramChatId?: string; // Optional: specific chat ID for this agent
   };
   salesPartnerId: string | null;
   status: 'active' | 'inactive';
@@ -36,8 +38,9 @@ export type Payment = {
 };
 
 export type SalesPartner = {
-  id: string;
+  id:string;
   name: string;
   commissionRate: number;
   totalSubAgentSales: number;
 };
+

@@ -6,6 +6,7 @@ import { sendTelegramInvoiceNotifications } from '@/ai/flows/telegram-invoice-no
 import { agents } from '@/lib/data';
 import type { Invoice } from '@/lib/types';
 import { z } from 'zod';
+import { getTelegramSettings } from '@/lib/settings';
 
 const ProcessUsageFileInputSchema = z.object({
   jsonData: z.string(),
@@ -66,39 +67,38 @@ export async function processUsageFile(input: ProcessUsageFileInput) {
 
 const SendNotificationInputSchema = z.object({
     invoice: z.custom<Invoice>(),
-    botToken: z.string(),
-    chatId: z.string().optional(),
-    messageTemplate: z.string(),
 });
 type SendNotificationInput = z.infer<typeof SendNotificationInputSchema>;
 
 export async function sendInvoiceNotification(input: SendNotificationInput) {
-    const { invoice, botToken, chatId, messageTemplate } = input;
+    const { invoice } = input;
     
     const agent = agents.find(a => a.id === invoice.agentId);
     if (!agent) {
         return { success: false, message: 'نماینده پیدا نشد.' };
     }
 
-    // If no specific chat ID is provided, you might want to fetch it from the agent's details
-    // For now, we'll assume a default or that it's provided.
-    const targetChatId = chatId || process.env.TELEGRAM_DEFAULT_CHAT_ID;
+    const settings = await getTelegramSettings();
+    if (!settings.botToken) {
+        return { success: false, message: 'توکن ربات تلگرام در تنظیمات یافت نشد.' };
+    }
+    
+    // Use the agent's specific chat ID if available, otherwise fall back to the default
+    const targetChatId = agent.contact.telegramChatId || settings.chatId;
 
     if (!targetChatId) {
-        return { success: false, message: 'شناسه چت تلگرام برای ارسال نوتیفیکیشن مشخص نشده است.' };
-    }
-     if (!botToken) {
-        return { success: false, message: 'توکن ربات تلگرام تنظیم نشده است.' };
+        return { success: false, message: 'شناسه چت تلگرام برای این نماینده یا به صورت پیش‌فرض تنظیم نشده است.' };
     }
 
     const result = await sendTelegramInvoiceNotifications({
-        botToken,
+        botToken: settings.botToken,
         chatId: targetChatId,
-        messageTemplate,
+        messageTemplate: settings.messageTemplate,
         name: agent.name,
         amount: invoice.amount,
-        portalLink: `${process.env.NEXT_PUBLIC_BASE_URL}${agent.portalLink}`,
+        portalLink: `${process.env.NEXT_PUBLIC_BASE_URL || ''}${agent.portalLink}`,
     });
 
     return result;
 }
+

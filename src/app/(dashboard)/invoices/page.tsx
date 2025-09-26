@@ -30,6 +30,8 @@ import { cn } from "@/lib/utils";
 import { UploadUsageDataDialog } from './_components/upload-usage-data-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { sendInvoiceNotification } from './actions';
+import { Skeleton } from '@/components/ui/skeleton';
+import Link from 'next/link';
 
 const statusMap = {
   paid: { label: 'پرداخت شده', className: 'text-green-400 bg-green-500/20 border-green-500/20' },
@@ -43,18 +45,23 @@ export default function InvoicesPage() {
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
 
   const handleNewInvoices = (newInvoices: Invoice[]) => {
-    setInvoices(prevInvoices => [...newInvoices, ...newInvoices].sort((a,b) => Date.parse(b.date) - Date.parse(a.date)));
+    setInvoices(prevInvoices => [...newInvoices, ...prevInvoices].sort((a,b) => Date.parse(b.date) - Date.parse(a.date)));
   };
 
   return (
     <Tabs defaultValue="all">
       <PageHeader title="مدیریت فاکتورها">
-        <Button 
-          className="bg-purple-600 hover:bg-purple-700 text-white"
-          onClick={() => setIsUploadDialogOpen(true)}
-        >
-          بارگذاری و پردازش فایل مصرف
-        </Button>
+        <div className="flex items-center gap-2">
+            <Button asChild variant="outline">
+                <Link href="/settings">رفتن به تنظیمات</Link>
+            </Button>
+            <Button 
+              className="bg-purple-600 hover:bg-purple-700 text-white"
+              onClick={() => setIsUploadDialogOpen(true)}
+            >
+              بارگذاری و پردازش فایل مصرف
+            </Button>
+        </div>
       </PageHeader>
       
       <UploadUsageDataDialog
@@ -98,25 +105,8 @@ function InvoiceTable({ invoiceList }: { invoiceList: Invoice[] }) {
     const handleSendNotification = async (invoice: Invoice) => {
         setNotifyingInvoiceId(invoice.id);
         try {
-            // These would come from a settings store/context in a real app
-            const botToken = localStorage.getItem('telegramBotToken') || '';
-            const messageTemplate = localStorage.getItem('telegramMessageTemplate') || "نماینده گرامی {{name}}، فاکتور جدید شما به مبلغ {{amount}} تومان در پورتال شما ثبت شد. لینک مشاهده: {{portalLink}}";
-            
-            if (!botToken) {
-                 toast({
-                    variant: 'destructive',
-                    title: 'تنظیمات تلگرام یافت نشد',
-                    description: 'لطفا ابتدا توکن ربات را در صفحه تنظیمات وارد کنید.',
-                });
-                return;
-            }
-
-            const result = await sendInvoiceNotification({
-                invoice,
-                botToken,
-                // chatId is optional, the action will figure it out
-                messageTemplate,
-            });
+            // The action now reads settings from the server, no need to pass them.
+            const result = await sendInvoiceNotification({ invoice });
 
             if (result.success) {
                 toast({

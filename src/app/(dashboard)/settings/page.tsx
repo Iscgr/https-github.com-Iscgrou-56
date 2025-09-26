@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,8 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
-import { sendTestTelegramNotification } from './actions';
-
+import { sendTestTelegramNotification, saveTelegramSettings } from './actions';
+import { getTelegramSettings } from '@/lib/settings';
 
 export default function SettingsPage() {
   const [botToken, setBotToken] = useState('');
@@ -21,34 +21,64 @@ export default function SettingsPage() {
   );
   const [isSaving, setIsSaving] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  const handleSave = () => {
+  useEffect(() => {
+    async function loadSettings() {
+      setIsLoading(true);
+      try {
+        const settings = await getTelegramSettings();
+        // Bot token is sensitive, we don't load it back into the UI for editing
+        // The placeholder will indicate it's set on the server
+        if (settings.botToken) {
+          setBotToken(''); // Clear it, but we can show a placeholder
+        }
+        setChatId(settings.chatId || '');
+        setMessageTemplate(settings.messageTemplate || 'نماینده گرامی {{name}}، فاکتور جدید شما به مبلغ {{amount}} تومان در پورتال شما ثبت شد. لینک مشاهده: {{portalLink}}');
+      } catch (error) {
+        // This might happen if the file doesn't exist yet, which is fine
+        console.log("Could not load initial settings, starting fresh.");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadSettings();
+  }, []);
+
+  const handleSave = async () => {
     setIsSaving(true);
-    // In a real app, you'd save these to a database or a config file.
-    // For now, we'll just show a toast message.
-    console.log("Saving settings:", { botToken, chatId, messageTemplate });
-    setTimeout(() => {
-      toast({
-        title: "تنظیمات ذخیره شد",
-        description: "تغییرات شما با موفقیت ذخیره گردید.",
-      });
-      setIsSaving(false);
-    }, 1000);
+    try {
+        const result = await saveTelegramSettings({ botToken, chatId, messageTemplate });
+         if (result.success) {
+            toast({
+                title: "تنظیمات ذخیره شد",
+                description: result.message,
+            });
+            setBotToken(''); // Clear the input after successful save
+        } else {
+            toast({
+                variant: 'destructive',
+                title: "خطا در ذخیره سازی",
+                description: result.message,
+            });
+        }
+    } catch (error) {
+        toast({
+            variant: 'destructive',
+            title: 'خطای غیرمنتظره',
+            description: error instanceof Error ? error.message : 'یک خطای ناشناخته رخ داد.',
+        });
+    } finally {
+        setIsSaving(false);
+    }
   };
 
   const handleTest = async () => {
-    if (!botToken) {
-        toast({
-            variant: 'destructive',
-            title: 'توکن ربات خالی است',
-            description: 'لطفا توکن ربات تلگرام را برای ارسال پیام تستی وارد کنید.'
-        });
-        return;
-    }
     setIsTesting(true);
     try {
-      const result = await sendTestTelegramNotification({ botToken, chatId, messageTemplate });
+      // The action now gets the bot token from the server-side
+      const result = await sendTestTelegramNotification({ chatId, messageTemplate });
       if (result.success) {
         toast({
           title: "نوتیفیکیشن تست ارسال شد",
@@ -72,6 +102,40 @@ export default function SettingsPage() {
     }
   };
 
+  if (isLoading) {
+    return (
+        <>
+            <PageHeader title="تنظیمات" />
+            <div className="space-y-4">
+                <Card>
+                    <CardHeader>
+                        <Skeleton className="h-8 w-48" />
+                        <Skeleton className="h-4 w-full mt-2" />
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                         <div className="space-y-2">
+                            <Skeleton className="h-5 w-24" />
+                            <Skeleton className="h-10 w-full" />
+                        </div>
+                         <div className="space-y-2">
+                            <Skeleton className="h-5 w-40" />
+                            <Skeleton className="h-10 w-full" />
+                        </div>
+                         <div className="space-y-2">
+                            <Skeleton className="h-5 w-20" />
+                            <Skeleton className="h-24 w-full" />
+                        </div>
+                    </CardContent>
+                    <CardFooter className="border-t px-6 py-4">
+                         <Skeleton className="h-10 w-40 ml-auto" />
+                         <Skeleton className="h-10 w-32" />
+                    </CardFooter>
+                </Card>
+            </div>
+        </>
+    )
+  }
+
 
   return (
     <>
@@ -90,17 +154,21 @@ export default function SettingsPage() {
                 <Label htmlFor="bot-token">توکن ربات تلگرام</Label>
                 <Input 
                   id="bot-token" 
-                  placeholder="توکن ربات خود را وارد کنید" 
+                  placeholder="در صورت نیاز به تغییر، توکن جدید را وارد کنید" 
                   dir="ltr"
+                  type="password"
                   value={botToken}
                   onChange={(e) => setBotToken(e.target.value)}
                 />
+                 <p className="text-xs text-muted-foreground">
+                  توکن فقط در سمت سرور ذخیره می‌شود و برای ویرایش مجدد نمایش داده نخواهد شد.
+                </p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="chat-id">شناسه چت پیش‌فرض (برای تست)</Label>
+                <Label htmlFor="chat-id">شناسه چت پیش‌فرض (برای تست و نوتیفیکیشن)</Label>
                 <Input 
                   id="chat-id" 
-                  placeholder="برای ارسال تست، شناسه چت خود را وارد کنید" 
+                  placeholder="شناسه چت پیش‌فرض را وارد کنید" 
                   dir="ltr"
                   value={chatId}
                   onChange={(e) => setChatId(e.target.value)}
@@ -138,3 +206,4 @@ export default function SettingsPage() {
     </>
   );
 }
+
