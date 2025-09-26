@@ -1,12 +1,11 @@
-import PageHeader from '@/components/page-header';
-import { getAgentSummaries } from '@/lib/data'; // <-- CHANGE HERE
-import { AgentFinancialSummary } from '@/lib/types'; // <-- CHANGE HERE
+import { PageHeader } from '@/components/page-header'; // <-- CHANGED
+import { getAgentSummaries } from '@/lib/data';
+import { AgentFinancialSummary } from '@/lib/types';
 import { AgentFormDialog } from './_components/agent-form-dialog';
-import { DataTable } from './_components/agent-table'; // Assuming this component is adapted for summaries
-import { columns } from './_components/columns'; // Assuming this is adapted as well
+import { DataTable } from './_components/agent-table';
+import { columns } from './_components/columns';
 
 export default async function AgentsPage() {
-  // Fetch the fast, pre-calculated summary data
   const agentSummaries: AgentFinancialSummary[] = await getAgentSummaries();
 
   return (
@@ -18,7 +17,6 @@ export default async function AgentsPage() {
         <AgentFormDialog />
       </PageHeader>
       
-      {/* The DataTable component will now receive summary data, making it much faster */}
       <DataTable columns={columns} data={agentSummaries} />
     </div>
   );

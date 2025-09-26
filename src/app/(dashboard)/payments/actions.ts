@@ -1,17 +1,11 @@
 'use server';
 
 import { z } from 'zod';
-import { agents, invoices, payments } from '@/lib/data';
+import { getAgents, getInvoices, getPayments } from '@/lib/data';
 import type { Payment } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
-
-const PaymentFormSchema = z.object({
-  agentId: z.string().min(1, { message: 'انتخاب نماینده الزامی است.' }),
-  invoiceId: z.string().min(1, { message: 'انتخاب فاکتور الزامی است.' }),
-  amount: z.coerce.number().positive({ message: 'مبلغ باید یک عدد مثبت باشد.' }),
-  paymentDate: z.string().min(1, { message: 'تاریخ پرداخت الزامی است.' }),
-  referenceNumber: z.string().optional(),
-});
+import { InvoiceService } from '@/lib/invoice-service';
+import { WalletService } from '@/lib/wallet-service';
 
 export type PaymentFormState = {
   message: string;
@@ -19,80 +13,54 @@ export type PaymentFormState = {
     agentId?: string[];
     invoiceId?: string[];
     amount?: string[];
-    paymentDate?: string[];
+    date?: string[];
   };
-}
+};
+
+const PaymentSchema = z.object({
+  agentId: z.string({ invalid_type_error: 'لطفا یک نماینده انتخاب کنید' }),
+  invoiceId: z.string().optional(),
+  amount: z.coerce.number().positive({ message: 'مبلغ باید بیشتر از صفر باشد' }),
+  date: z.string(),
+  paymentMethod: z.enum(['EXTERNAL', 'INTERNAL_SETTLEMENT'])
+});
 
 export async function recordPayment(
-  prevState: PaymentFormState,
-  formData: FormData
+  state: PaymentFormState,
+  formData: FormData,
 ): Promise<PaymentFormState> {
-  const validatedFields = PaymentFormSchema.safeParse(Object.fromEntries(formData.entries()));
+  const validatedFields = PaymentSchema.safeParse(Object.fromEntries(formData.entries()));
 
   if (!validatedFields.success) {
     return {
-      message: 'خطا در اعتبارسنجی ورودی‌ها.',
+      message: 'لطفا خطاهای فرم را برطرف کنید.',
       errors: validatedFields.error.flatten().fieldErrors,
     };
   }
-
-  const { agentId, invoiceId, amount, paymentDate, referenceNumber } = validatedFields.data;
-
-  const agent = agents.find(a => a.id === agentId);
-  const invoice = invoices.find(i => i.id === invoiceId);
-
-  if (!agent) {
-    return { message: 'خطا: نماینده یافت نشد.' };
-  }
-  if (!invoice) {
-    return { message: 'خطا: فاکتور یافت نشد.' };
-  }
-  if(invoice.agentId !== agentId) {
-    return { message: 'خطا: این فاکتور متعلق به نماینده انتخاب شده نیست.'}
-  }
-
-  const paymentsForInvoice = payments.filter(p => p.invoiceId === invoiceId);
-  const totalPaidForInvoice = paymentsForInvoice.reduce((sum, p) => sum + p.amount, 0);
   
-  const remainingAmount = invoice.amount - totalPaidForInvoice;
-
-  if (amount > remainingAmount) {
-    return {
-      message: `مبلغ پرداخت ( ${new Intl.NumberFormat('fa-IR').format(amount)} ) نمی‌تواند بیشتر از باقیمانده فاکتور ( ${new Intl.NumberFormat('fa-IR').format(remainingAmount)} تومان) باشد.`,
-      errors: { amount: [`مبلغ بیش از حد مجاز است.`] }
-    };
-  }
+  const { agentId, amount, date, paymentMethod, invoiceId } = validatedFields.data;
 
   try {
-    const newPayment: Payment = {
-      id: `pay-${Date.now()}`,
-      agentId,
-      invoiceId,
-      amount,
-      date: paymentDate,
-      referenceNumber,
-    };
+    if (paymentMethod === 'EXTERNAL') {
+        // This is a new deposit
+        await WalletService.deposit(agentId, amount, `payment_ref_${Date.now()}`);
+        console.log(`[Action] Recorded external deposit of ${amount} for agent ${agentId}.`);
+    }
 
-    payments.unshift(newPayment);
+    // Trigger settlement for the agent regardless of payment method
+    await WalletService.settleInvoices(agentId);
+    console.log(`[Action] Triggered invoice settlement for agent ${agentId}.`);
 
-    agent.totalPayments += amount;
-    agent.totalDebt -= amount;
-    
-    const newTotalPaid = totalPaidForInvoice + amount;
-    invoice.status = newTotalPaid >= invoice.amount ? 'paid' : 'partial';
+    // Revalidate paths to update UI
+    revalidatePath('/payments');
+    revalidatePath('/agents');
+    if (invoiceId) {
+        revalidatePath(`/invoices/${invoiceId}`);
+    }
 
-    revalidatePath('/(dashboard)/agents');
-    revalidatePath(`/(dashboard)/agents/${agent.id}`);
-    revalidatePath('/(dashboard)/invoices');
-    revalidatePath('/(dashboard)/payments');
+    return { message: 'پرداخت با موفقیت ثبت و تسویه شد.' };
 
-    return { 
-        message: `پرداخت برای فاکتور ${invoice.invoiceNumber} با موفقیت ثبت شد.`, 
-    };
-
-  } catch (error) {
-    return {
-      message: 'خطا در ثبت پرداخت. لطفا دوباره تلاش کنید.'
-    };
+  } catch (error: any) {
+      return { message: `خطا در ثبت پرداخت: ${error.message}` };
   }
 }

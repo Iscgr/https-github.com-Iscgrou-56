@@ -1,8 +1,8 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
-import { AgentFinancialSummary } from "@/lib/types" 
-import { MoreHorizontal, Info } from "lucide-react"
+import { AgentFinancialSummary } from "@/lib/types"
+import { MoreHorizontal } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -14,33 +14,17 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { cn } from "@/lib/utils"
-
-// --- CHANGE START for Item 2.5: Eventual Consistency Indicator ---
-const isDataStale = (lastUpdate: string): boolean => {
-    const lastUpdateDate = new Date(lastUpdate);
-    const now = new Date();
-    // Mark as stale if updated more than 1 minute ago (for demo purposes)
-    return (now.getTime() - lastUpdateDate.getTime()) > 60 * 1000; 
-}
-// --- CHANGE END ---
-
+import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 export const columns: ColumnDef<AgentFinancialSummary>[] = [
   {
     accessorKey: "agentName",
     header: "نام نماینده",
-    cell: ({ row }) => {
-        const agentId = row.original.agentId
-        const isStale = isDataStale(row.original.lastUpdatedAt);
-
-        return (
-            <div className={cn("flex items-center", { "animate-pulse": isStale })}>
-                 <Link href={`/agents/${agentId}`} className="hover:underline text-cyan-400">{row.getValue("agentName")}</Link>
-            </div>
-        )
-    }
+    cell: ({ row }) => (
+      <Link href={`/agents/${row.original.agentId}`} className="hover:underline text-cyan-400">
+        {row.getValue("agentName")}
+      </Link>
+    )
   },
   {
     accessorKey: "agentCode",
@@ -50,53 +34,65 @@ export const columns: ColumnDef<AgentFinancialSummary>[] = [
     accessorKey: "agentStatus",
     header: "وضعیت",
     cell: ({ row }) => {
-        const status = row.getValue("agentStatus")
-        const variant = status === 'active' ? 'default' : 'destructive'
-        const text = status === 'active' ? 'فعال' : 'غیرفعال'
-        return <Badge variant={variant} className="bg-green-600 text-white">{text}</Badge>
+      const status = row.getValue("agentStatus")
+      const isActive = status === 'active'
+      return (
+        <Badge variant={isActive ? "default" : "destructive"} className={isActive ? "bg-green-600" : ""}>
+          {isActive ? 'فعال' : 'غیرفعال'}
+        </Badge>
+      )
     }
   },
   {
     accessorKey: "totalSales",
     header: "فروش کل",
     cell: ({ row }) => {
-        const amount = parseFloat(row.getValue("totalSales"))
-        const formatted = new Intl.NumberFormat("fa-IR", { style: "currency", currency: "IRR" }).format(amount)
-        return <div className="text-right font-medium">{formatted}</div>
-      },
+      const amount = parseFloat(row.getValue("totalSales"))
+      return <div className="text-right font-medium">{new Intl.NumberFormat("fa-IR").format(amount)}</div>
+    }
   },
   {
     accessorKey: "totalDebt",
     header: "بدهی کل",
     cell: ({ row }) => {
-        const amount = parseFloat(row.getValue("totalDebt"))
-        const formatted = new Intl.NumberFormat("fa-IR", { style: "currency", currency: "IRR" }).format(amount)
-        return <div className="text-right font-medium text-red-400">{formatted}</div>
-      },
+      const amount = parseFloat(row.getValue("totalDebt"))
+      return <div className="text-right font-medium text-red-400">{new Intl.NumberFormat("fa-IR").format(amount)}</div>
+    }
   },
-    {
+  {
     accessorKey: "lastUpdatedAt",
     header: "آخرین بروزرسانی",
-    cell: ({ row }) => {
-        const lastUpdate = new Date(row.getValue("lastUpdatedAt"));
-        return (
-            <TooltipProvider>
-                <Tooltip>
-                    <TooltipTrigger>
-                         <div className="text-xs text-gray-500">{lastUpdate.toLocaleTimeString('fa-IR')}</div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        <p>آخرین زمان همگام سازی داده ها</p>
-                    </TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
-        )
-    }
+    cell: ({ row }) => (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger>
+            <div className="text-xs text-gray-500">{new Date(row.getValue("lastUpdatedAt")).toLocaleTimeString('fa-IR')}</div>
+          </TooltipTrigger>
+          <TooltipContent><p>آخرین زمان همگام سازی داده ها</p></TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    )
   },
   {
     id: "actions",
     cell: ({ row }) => {
-      // ... (actions dropdown remains the same)
+      const agent = row.original
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="bg-gray-800 text-white border-gray-700">
+            <DropdownMenuLabel>عملیات</DropdownMenuLabel>
+            <DropdownMenuItem asChild>
+              <Link href={`/agents/${agent.agentId}`}>مشاهده پروفایل</Link>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )
     },
   },
 ]

@@ -1,74 +1,56 @@
-'use server';
+"use server";
 
-import { z } from 'zod';
-import { salesPartners } from '@/lib/data';
-import type { SalesPartner } from '@/lib/types';
-import { revalidatePath } from 'next/cache';
+import { CommissionService } from "@/lib/commission-service";
+import { getSalesPartners } from "@/lib/data";
 
-const PartnerFormSchema = z.object({
-  id: z.string().optional(),
-  name: z.string().min(2, { message: 'نام حداقل باید ۲ کاراکتر باشد.' }),
-  commissionRate: z.coerce
-    .number({ invalid_type_error: 'نرخ کمیسیون باید عدد باشد.' })
-    .min(0, { message: 'نرخ کمیسیون نمی‌تواند منفی باشد.' })
-    .max(100, { message: 'نرخ کمیسیون نمی‌تواند بیشتر از ۱۰۰ باشد.' }),
-});
+// In a real app, you would fetch reports from your database.
+// We will use the service to get the data structure.
+let mockReportsStore: any[] = [];
 
-export type PartnerFormState = {
-  message: string;
-  errors?: {
-    name?: string[];
-    commissionRate?: string[];
-  };
+export async function calculateCommissionAction(partnerId: string, startDate: string, endDate: string) {
+    console.log(`[Action] Received request to calculate commission for partner ${partnerId}`);
+    try {
+        const partners = await getSalesPartners();
+        const partner = partners.find(p => p.id === partnerId);
+        if (!partner) {
+            throw new Error("Sales partner not found.");
+        }
+
+        const report = await CommissionService.calculateCommission(partner, startDate, endDate);
+        
+        // Store the report in our mock store to be retrieved later
+        mockReportsStore.push(report);
+
+        return { success: true, message: "Commission calculated successfully.", data: report };
+    } catch (error: any) {
+        return { success: false, message: error.message };
+    }
 }
 
-export async function addOrUpdatePartner(
-  prevState: PartnerFormState,
-  formData: FormData
-): Promise<PartnerFormState> {
-  const rawData = {
-    id: formData.get('id') || undefined,
-    name: formData.get('name'),
-    commissionRate: formData.get('commissionRate'),
-  };
-  
-  const validatedFields = PartnerFormSchema.safeParse(rawData);
+/**
+ * Item 3.3: Export Commission Details
+ * This action retrieves the detailed data for a commission report and formats it as a CSV string.
+ */
+export async function exportReportDetailsAsCsvAction(reportId: string): Promise<{ success: boolean; csvContent?: string; message: string }> {
+    console.log(`[Action] Request to export details for report ${reportId}`);
+    try {
+        // Find the report in our mock data store
+        const report = mockReportsStore.find(r => r.id === reportId);
+        if (!report || !report.calculationDetails) {
+            throw new Error("Report not found or has no details.");
+        }
 
-  if (!validatedFields.success) {
-    return {
-      message: 'خطا در اعتبارسنجی ورودی‌ها.',
-      errors: validatedFields.error.flatten().fieldErrors,
-    };
-  }
+        // CSV Header
+        let csvContent = "Invoice_ID,Invoice_Amount\n";
 
-  const { id, name, commissionRate } = validatedFields.data;
+        // CSV Rows
+        for (const detail of report.calculationDetails) {
+            csvContent += `${detail.invoiceId},${detail.amount}\n`;
+        }
 
-  try {
-    if (id) {
-      // Update existing partner
-      const partnerIndex = salesPartners.findIndex(p => p.id === id);
-      if (partnerIndex > -1) {
-        salesPartners[partnerIndex] = { ...salesPartners[partnerIndex], name, commissionRate };
-        revalidatePath('/(dashboard)/partners');
-        return { message: `همکار فروش ${name} با موفقیت ویرایش شد.` };
-      } else {
-        return { message: 'خطا: همکار فروش یافت نشد.' };
-      }
-    } else {
-      // Add new partner
-      const newPartner: SalesPartner = {
-        id: `partner-${Date.now()}`,
-        name,
-        commissionRate,
-        totalSubAgentSales: 0, 
-      };
-      salesPartners.unshift(newPartner);
-      revalidatePath('/(dashboard)/partners');
-      return { message: `همکار فروش ${name} با موفقیت اضافه شد.` };
+        return { success: true, csvContent, message: "Export data generated successfully." };
+
+    } catch (error: any) {
+        return { success: false, message: error.message };
     }
-  } catch (error) {
-    return {
-      message: 'خطا در عملیات. لطفا دوباره تلاش کنید.'
-    };
-  }
 }
