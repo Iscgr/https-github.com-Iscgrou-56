@@ -105,12 +105,12 @@ export function AgentFormDialog({ isOpen, onOpenChange, onAgentAdded, agent }: P
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="salesPartnerId">همکار فروش (اختیاری)</Label>
-                        <Select name="salesPartnerId" defaultValue="">
+                        <Select name="salesPartnerId" defaultValue="none">
                             <SelectTrigger id="salesPartnerId">
                                 <SelectValue placeholder="یک همکار فروش انتخاب کنید" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="">
+                                <SelectItem value="none">
                                     <em>بدون همکار</em>
                                 </SelectItem>
                                 {salesPartners.map(partner => (

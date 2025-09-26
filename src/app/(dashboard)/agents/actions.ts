@@ -34,12 +34,17 @@ export async function addOrUpdateAgent(
   prevState: AgentFormState,
   formData: FormData
 ): Promise<AgentFormState> {
-  const validatedFields = AgentFormSchema.safeParse({
+  const rawData = {
     name: formData.get('name'),
     email: formData.get('email'),
     phone: formData.get('phone'),
     telegramChatId: formData.get('telegramChatId'),
-    salesPartnerId: formData.get('salesPartnerId') || null,
+    salesPartnerId: formData.get('salesPartnerId'),
+  };
+
+  const validatedFields = AgentFormSchema.safeParse({
+    ...rawData,
+    salesPartnerId: rawData.salesPartnerId === 'none' ? null : rawData.salesPartnerId,
   });
 
   if (!validatedFields.success) {
