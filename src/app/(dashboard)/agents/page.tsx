@@ -154,7 +154,7 @@ export default function AgentsPage() {
                         <DropdownMenuItem>ویرایش</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleOpenPaymentDialog(agent)}>ثبت پرداخت</DropdownMenuItem>
                         <DropdownMenuItem asChild>
-                           <Link href={agent.portalLink}>مشاهده پورتال</Link>
+                           <Link href={agent.portalLink} target="_blank">مشاهده پورتال</Link>
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
