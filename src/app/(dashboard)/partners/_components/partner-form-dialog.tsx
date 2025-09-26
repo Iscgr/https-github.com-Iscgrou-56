@@ -2,7 +2,8 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import {
   Dialog,
   DialogContent,
@@ -43,7 +44,7 @@ function SubmitButton({ isEditing }: { isEditing: boolean }) {
 
 
 export function PartnerFormDialog({ isOpen, onOpenChange, onPartnerChanged, partner }: Props) {
-  const [state, formAction] = useFormState(addOrUpdatePartner, initialState);
+  const [state, formAction] = useActionState(addOrUpdatePartner, initialState);
   const { toast } = useToast();
 
   useEffect(() => {

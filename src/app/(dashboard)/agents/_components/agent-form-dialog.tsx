@@ -2,7 +2,8 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import {
   Dialog,
   DialogContent,
@@ -51,7 +52,7 @@ function SubmitButton() {
 
 
 export function AgentFormDialog({ isOpen, onOpenChange, onAgentAdded, agent }: Props) {
-  const [state, formAction] = useFormState(addOrUpdateAgent, initialState);
+  const [state, formAction] = useActionState(addOrUpdateAgent, initialState);
   const { toast } = useToast();
 
   useEffect(() => {
