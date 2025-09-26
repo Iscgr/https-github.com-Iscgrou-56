@@ -5,41 +5,51 @@ export const agents: Agent[] = [
   {
     id: 'agent-1',
     name: 'نماینده یک',
+    code: 'N-001',
     contact: { email: 'agent1@example.com', phone: '09123456781' },
     salesPartnerId: 'partner-1',
     status: 'active',
     totalSales: 15000000,
     totalPayments: 12000000,
+    totalDebt: 3000000,
     avatarUrl: 'https://picsum.photos/seed/agent1/100/100',
     portalLink: '/portal/agent-1',
+    createdAt: '2023-01-15T10:30:00Z',
   },
   {
     id: 'agent-2',
     name: 'نماینده دو',
-    contact: { email: 'agent2@example.com', phone: '09123456782', telegramChatId: '123456789' }, // Example specific chat ID
+    code: 'N-002',
+    contact: { email: 'agent2@example.com', phone: '09123456782', telegramChatId: '123456789' },
     salesPartnerId: 'partner-1',
     status: 'active',
     totalSales: 25000000,
     totalPayments: 25000000,
+    totalDebt: 0,
     avatarUrl: 'https://picsum.photos/seed/agent2/100/100',
     portalLink: '/portal/agent-2',
+    createdAt: '2023-02-20T11:00:00Z',
   },
   {
     id: 'agent-3',
     name: 'نماینده سه',
+    code: 'N-003',
     contact: { email: 'agent3@example.com', phone: '09123456783' },
     salesPartnerId: 'partner-2',
     status: 'inactive',
     totalSales: 5000000,
     totalPayments: 5000000,
+    totalDebt: 0,
     avatarUrl: 'https://picsum.photos/seed/agent3/100/100',
     portalLink: '/portal/agent-3',
+    createdAt: '2023-03-01T18:00:00Z',
   },
 ];
 
 export const invoices: Invoice[] = [
   {
-    id: 'inv-001',
+    id: 'inv-1',
+    invoiceNumber: 'MF-2023-0001',
     agentId: 'agent-1',
     agentName: 'نماینده یک',
     date: '2023-10-01',
@@ -49,7 +59,8 @@ export const invoices: Invoice[] = [
     items: [{ description: 'مصرف ماهانه', amount: 3000000 }],
   },
   {
-    id: 'inv-002',
+    id: 'inv-2',
+    invoiceNumber: 'MF-2023-0002',
     agentId: 'agent-1',
     agentName: 'نماینده یک',
     date: '2023-09-01',
@@ -59,7 +70,8 @@ export const invoices: Invoice[] = [
     items: [{ description: 'مصرف ماهانه', amount: 5000000 }],
   },
   {
-    id: 'inv-003',
+    id: 'inv-3',
+    invoiceNumber: 'MF-2023-0003',
     agentId: 'agent-2',
     agentName: 'نماینده دو',
     date: '2023-10-05',
@@ -69,7 +81,8 @@ export const invoices: Invoice[] = [
     items: [{ description: 'مصرف ماهانه', amount: 10000000 }],
   },
   {
-    id: 'inv-004',
+    id: 'inv-4',
+    invoiceNumber: 'MF-2023-0004',
     agentId: 'agent-1',
     agentName: 'نماینده یک',
     date: '2023-08-01',
@@ -96,11 +109,10 @@ export const salesPartners: SalesPartner[] = [
 ];
 
 export const payments: Payment[] = [
-    { id: 'pay-1', agentId: 'agent-1', date: '2023-09-10', amount: 5000000, invoiceId: 'inv-002' },
-    { id: 'pay-2', agentId: 'agent-2', date: '2023-10-10', amount: 10000000, invoiceId: 'inv-003' },
+    { id: 'pay-1', agentId: 'agent-1', date: '2023-09-10', amount: 5000000, invoiceId: 'inv-2' },
+    { id: 'pay-2', agentId: 'agent-2', date: '2023-10-10', amount: 10000000, invoiceId: 'inv-3' },
 ];
 
-export const getAgentById = (id: string) => agents.find(a => a.id === id);
+export const getAgentById = (id: string) => agents.find(a => a.id === id || a.portalLink.endsWith(id));
 export const getInvoicesByAgentId = (agentId: string) => invoices.filter(i => i.agentId === agentId);
 export const getPaymentsByAgentId = (agentId: string) => payments.filter(p => p.agentId === agentId);
-

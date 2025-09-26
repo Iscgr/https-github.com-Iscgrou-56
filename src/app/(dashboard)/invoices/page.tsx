@@ -30,7 +30,6 @@ import { cn } from "@/lib/utils";
 import { UploadUsageDataDialog } from './_components/upload-usage-data-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { sendInvoiceNotification } from './actions';
-import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 
 const statusMap = {
@@ -38,10 +37,11 @@ const statusMap = {
   unpaid: { label: 'پرداخت نشده', className: 'text-red-400 bg-red-500/20 border-red-500/20' },
   partial: { label: 'تسویه جزیی', className: 'text-yellow-400 bg-yellow-500/20 border-yellow-500/20' },
   overdue: { label: 'سررسید گذشته', className: 'text-orange-400 bg-orange-500/20 border-orange-500/20' },
+  cancelled: { label: 'لغو شده', className: 'text-gray-400 bg-gray-500/20 border-gray-500/20' },
 };
 
 export default function InvoicesPage() {
-  const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices);
+  const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices.sort((a,b) => Date.parse(b.date) - Date.parse(a.date)));
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
 
   const handleNewInvoices = (newInvoices: Invoice[]) => {
@@ -105,7 +105,6 @@ function InvoiceTable({ invoiceList }: { invoiceList: Invoice[] }) {
     const handleSendNotification = async (invoice: Invoice) => {
         setNotifyingInvoiceId(invoice.id);
         try {
-            // The action now reads settings from the server, no need to pass them.
             const result = await sendInvoiceNotification({ invoice });
 
             if (result.success) {
@@ -140,7 +139,7 @@ function InvoiceTable({ invoiceList }: { invoiceList: Invoice[] }) {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>شناسه فاکتور</TableHead>
+          <TableHead>شماره فاکتور</TableHead>
           <TableHead>نماینده</TableHead>
           <TableHead>وضعیت</TableHead>
           <TableHead>مبلغ</TableHead>
@@ -154,7 +153,7 @@ function InvoiceTable({ invoiceList }: { invoiceList: Invoice[] }) {
       <TableBody>
         {invoiceList.map((invoice) => (
           <TableRow key={invoice.id}>
-            <TableCell className="font-medium font-code">{invoice.id}</TableCell>
+            <TableCell className="font-medium font-code">{invoice.invoiceNumber}</TableCell>
             <TableCell>{invoice.agentName}</TableCell>
             <TableCell>
               <Badge

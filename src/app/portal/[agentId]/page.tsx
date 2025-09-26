@@ -1,3 +1,4 @@
+
 import { notFound } from 'next/navigation';
 import {
   getAgentById,
@@ -23,12 +24,14 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { DollarSign, Scale, Receipt } from 'lucide-react';
+import type { Invoice } from '@/lib/types';
 
-const statusMap = {
+const statusMap: Record<Invoice['status'], { label: string; className: string }> = {
   paid: { label: 'پرداخت شده', className: 'text-green-400 bg-green-500/20 border-green-500/20' },
   unpaid: { label: 'پرداخت نشده', className: 'text-red-400 bg-red-500/20 border-red-500/20' },
   partial: { label: 'تسویه جزیی', className: 'text-yellow-400 bg-yellow-500/20 border-yellow-500/20' },
   overdue: { label: 'سررسید گذشته', className: 'text-orange-400 bg-orange-500/20 border-orange-500/20' },
+  cancelled: { label: 'لغو شده', className: 'text-gray-400 bg-gray-500/20 border-gray-500/20' },
 };
 
 export default function AgentPortalPage({
@@ -41,12 +44,11 @@ export default function AgentPortalPage({
     notFound();
   }
 
-  const invoices = getInvoicesByAgentId(params.agentId);
-  const payments = getPaymentsByAgentId(params.agentId);
-  const totalDebt = agent.totalSales - agent.totalPayments;
-
+  const invoices = getInvoicesByAgentId(agent.id);
+  const payments = getPaymentsByAgentId(agent.id);
+  
   const summaryData = [
-    { title: 'کل بدهی', value: `${new Intl.NumberFormat('fa-IR').format(totalDebt)} تومان`, icon: Scale },
+    { title: 'کل بدهی', value: `${new Intl.NumberFormat('fa-IR').format(agent.totalDebt)} تومان`, icon: Scale },
     { title: 'کل فروش', value: `${new Intl.NumberFormat('fa-IR').format(agent.totalSales)} تومان`, icon: DollarSign },
     { title: 'کل پرداخت‌ها', value: `${new Intl.NumberFormat('fa-IR').format(agent.totalPayments)} تومان`, icon: Receipt },
   ];
@@ -77,7 +79,7 @@ export default function AgentPortalPage({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>شناسه</TableHead>
+                <TableHead>شماره فاکتور</TableHead>
                 <TableHead>تاریخ صدور</TableHead>
                 <TableHead>مبلغ</TableHead>
                 <TableHead>وضعیت</TableHead>
@@ -86,7 +88,7 @@ export default function AgentPortalPage({
             <TableBody>
               {invoices.map((invoice) => (
                 <TableRow key={invoice.id}>
-                  <TableCell className="font-code">{invoice.id}</TableCell>
+                  <TableCell className="font-code">{invoice.invoiceNumber}</TableCell>
                   <TableCell className="font-code">{invoice.date}</TableCell>
                   <TableCell className="font-code">{new Intl.NumberFormat('fa-IR').format(invoice.amount)}</TableCell>
                   <TableCell>
@@ -121,7 +123,7 @@ export default function AgentPortalPage({
                   <TableCell className="font-code">{payment.id}</TableCell>
                   <TableCell className="font-code">{payment.date}</TableCell>
                   <TableCell className="font-code text-green-400">{new Intl.NumberFormat('fa-IR').format(payment.amount)}</TableCell>
-                  <TableCell className="font-code">{payment.invoiceId}</TableCell>
+                  <TableCell className="font-code">{invoices.find(i => i.id === payment.invoiceId)?.invoiceNumber || payment.invoiceId}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

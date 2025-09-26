@@ -72,7 +72,7 @@ export function AgentFormDialog({ isOpen, onOpenChange, onAgentAdded, agent }: P
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[625px]">
         <DialogHeader>
           <DialogTitle>{agent ? 'ویرایش نماینده' : 'افزودن نماینده جدید'}</DialogTitle>
           <DialogDescription>
@@ -81,10 +81,17 @@ export function AgentFormDialog({ isOpen, onOpenChange, onAgentAdded, agent }: P
         </DialogHeader>
         <form action={formAction}>
             <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                    <Label htmlFor="name">نام کامل</Label>
-                    <Input id="name" name="name" placeholder="مثال: علی رضایی" required />
-                    {state.errors?.name && <p className="text-xs text-red-500">{state.errors.name[0]}</p>}
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="name">نام کامل</Label>
+                        <Input id="name" name="name" placeholder="مثال: علی رضایی" required />
+                        {state.errors?.name && <p className="text-xs text-red-500">{state.errors.name[0]}</p>}
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="code">کد نماینده</Label>
+                        <Input id="code" name="code" placeholder="مثال: N-001" required />
+                        {state.errors?.code && <p className="text-xs text-red-500">{state.errors.code[0]}</p>}
+                    </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">

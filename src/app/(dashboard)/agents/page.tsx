@@ -36,7 +36,7 @@ export default function AgentsPage() {
   const { toast } = useToast();
 
   const handleAgentAdded = (newAgent: Agent) => {
-    setAgents(prev => [newAgent, ...prev]);
+    setAgents(prev => [newAgent, ...prev].sort((a,b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)));
     toast({
       title: 'نماینده جدید اضافه شد',
       description: `نماینده "${newAgent.name}" با موفقیت به لیست اضافه شد.`,
@@ -63,10 +63,10 @@ export default function AgentsPage() {
                 <TableHead className="hidden w-[100px] sm:table-cell">
                   <span className="sr-only">آواتار</span>
                 </TableHead>
-                <TableHead>نام</TableHead>
+                <TableHead>نماینده</TableHead>
                 <TableHead>وضعیت</TableHead>
                 <TableHead className="hidden md:table-cell">کل فروش</TableHead>
-                <TableHead className="hidden md:table-cell">بدهی</TableHead>
+                <TableHead className="hidden md:table-cell">بدهی فعلی</TableHead>
                 <TableHead>
                   <span className="sr-only">اقدامات</span>
                 </TableHead>
@@ -87,7 +87,7 @@ export default function AgentsPage() {
                   </TableCell>
                   <TableCell className="font-medium">
                     <div className="font-semibold">{agent.name}</div>
-                    <div className="text-xs text-muted-foreground">{agent.contact.email}</div>
+                    <div className="text-xs text-muted-foreground font-code">{agent.code}</div>
                   </TableCell>
                   <TableCell>
                     <Badge
@@ -104,7 +104,7 @@ export default function AgentsPage() {
                     {new Intl.NumberFormat('fa-IR').format(agent.totalSales)} تومان
                   </TableCell>
                   <TableCell className="hidden md:table-cell font-code text-red-400">
-                    {new Intl.NumberFormat('fa-IR').format(agent.totalSales - agent.totalPayments)} تومان
+                    {new Intl.NumberFormat('fa-IR').format(agent.totalDebt)} تومان
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>

@@ -3,7 +3,7 @@
 
 import { validateAndAggregateUsageData } from '@/ai/flows/validate-and-aggregate-usage-data';
 import { sendTelegramInvoiceNotifications } from '@/ai/flows/telegram-invoice-notifications';
-import { agents } from '@/lib/data';
+import { agents, invoices } from '@/lib/data';
 import type { Invoice } from '@/lib/types';
 import { z } from 'zod';
 import { getTelegramSettings } from '@/lib/settings';
@@ -13,6 +13,13 @@ const ProcessUsageFileInputSchema = z.object({
   processedHashes: z.array(z.string()).optional(),
 });
 type ProcessUsageFileInput = z.infer<typeof ProcessUsageFileInputSchema>;
+
+async function generateInvoiceNumber(issueDate: Date): Promise<string> {
+  const year = issueDate.getFullYear();
+  // In a real app, this sequence would come from a database sequence or a counter service.
+  const sequence = invoices.filter(inv => new Date(inv.date).getFullYear() === year).length + 1;
+  return `MF-${year}-${sequence.toString().padStart(4, '0')}`;
+}
 
 export async function processUsageFile(input: ProcessUsageFileInput) {
   const validationResult = await validateAndAggregateUsageData({
@@ -25,7 +32,8 @@ export async function processUsageFile(input: ProcessUsageFileInput) {
   }
 
   const newInvoices: Invoice[] = [];
-
+  const today = new Date();
+  
   for (const agentId in validationResult.aggregatedData) {
     const agentUsage = validationResult.aggregatedData[agentId];
     if (!agentUsage || agentUsage.length === 0) continue;
@@ -38,12 +46,14 @@ export async function processUsageFile(input: ProcessUsageFileInput) {
 
     const totalAmount = agentUsage.reduce((sum, usage) => sum + usage.usageAmount, 0);
 
-    const today = new Date();
     const dueDate = new Date();
     dueDate.setDate(today.getDate() + 14); // 14 days from now
 
+    const invoiceNumber = await generateInvoiceNumber(today);
+
     const newInvoice: Invoice = {
       id: `inv-${Date.now()}-${agentId.slice(-3)}`,
+      invoiceNumber: invoiceNumber,
       agentId: agentId,
       agentName: agent.name,
       amount: totalAmount,
@@ -56,6 +66,10 @@ export async function processUsageFile(input: ProcessUsageFileInput) {
       }))
     };
     newInvoices.push(newInvoice);
+
+    // Update agent's debt and total sales (in-memory)
+    agent.totalSales += totalAmount;
+    agent.totalDebt += totalAmount;
   }
 
   return {
@@ -83,7 +97,6 @@ export async function sendInvoiceNotification(input: SendNotificationInput) {
         return { success: false, message: 'توکن ربات تلگرام در تنظیمات یافت نشد.' };
     }
     
-    // Use the agent's specific chat ID if available, otherwise fall back to the default
     const targetChatId = agent.contact.telegramChatId || settings.chatId;
 
     if (!targetChatId) {
@@ -101,4 +114,3 @@ export async function sendInvoiceNotification(input: SendNotificationInput) {
 
     return result;
 }
-
