@@ -1,6 +1,7 @@
 
 export type Agent = {
   id: string;
+  publicId: string;
   name: string;
   code: string;
   contact: {
@@ -15,7 +16,6 @@ export type Agent = {
   totalDebt: number;
   avatarUrl: string;
   portalLink: string;
-  publicId: string;
   createdAt: string;
 };
 

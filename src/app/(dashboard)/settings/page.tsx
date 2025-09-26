@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { sendTestTelegramNotification, saveTelegramSettings } from './actions';
 import { getTelegramSettings } from '@/lib/settings';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function SettingsPage() {
   const [botToken, setBotToken] = useState('');
@@ -106,11 +107,13 @@ export default function SettingsPage() {
     return (
         <>
             <PageHeader title="تنظیمات" />
-            <div className="space-y-4">
+             <div className="grid gap-6">
                 <Card>
                     <CardHeader>
-                        <Skeleton className="h-8 w-48" />
-                        <Skeleton className="h-4 w-full mt-2" />
+                        <CardTitle>نوتیفیکیشن تلگرام</CardTitle>
+                        <CardDescription>
+                            {"تنظیمات مربوط به ربات تلگرام برای ارسال نوتیفیکیشن‌ها به نمایندگان. میتوانید از متغیرهای {{name}}، {{amount}} و {{portalLink}} در قالب پیام استفاده کنید."}
+                        </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                          <div className="space-y-2">
@@ -126,8 +129,8 @@ export default function SettingsPage() {
                             <Skeleton className="h-24 w-full" />
                         </div>
                     </CardContent>
-                    <CardFooter className="border-t px-6 py-4">
-                         <Skeleton className="h-10 w-40 ml-auto" />
+                    <CardFooter className="border-t px-6 py-4 justify-end gap-2">
+                         <Skeleton className="h-10 w-40" />
                          <Skeleton className="h-10 w-32" />
                     </CardFooter>
                 </Card>
@@ -206,4 +209,3 @@ export default function SettingsPage() {
     </>
   );
 }
-

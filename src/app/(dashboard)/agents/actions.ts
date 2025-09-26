@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { agents } from '@/lib/data';
 import type { Agent } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
+import crypto from 'crypto';
 
 const AgentFormSchema = z.object({
   id: z.string().optional(),
@@ -54,8 +55,12 @@ export async function addOrUpdateAgent(
 
   try {
     // In a real app, you'd save this to a database.
+    const agentId = `agent-${Date.now()}`;
+    const publicId = `pub-${code}-${crypto.randomBytes(4).toString('hex')}`;
+    
     const newAgent: Agent = {
-      id: `agent-${Date.now()}`,
+      id: agentId,
+      publicId: publicId,
       name,
       code,
       contact: {
@@ -69,7 +74,7 @@ export async function addOrUpdateAgent(
       totalPayments: 0,
       totalDebt: 0,
       avatarUrl: `https://picsum.photos/seed/${name}/100/100`,
-      portalLink: `/portal/agent-${Date.now()}`,
+      portalLink: `/portal/${publicId}`,
       createdAt: new Date().toISOString(),
     };
 
