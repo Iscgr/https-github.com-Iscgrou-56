@@ -11,6 +11,7 @@ import {
   LogOut,
   Settings,
   Users,
+  DollarSign,
 } from 'lucide-react';
 
 import {
@@ -41,6 +42,7 @@ const navItems = [
   { href: '/', label: 'داشبورد', icon: Home },
   { href: '/agents', label: 'نمایندگان', icon: Users },
   { href: '/invoices', label: 'فاکتورها', icon: FileText },
+  { href: '/payments', label: 'پرداخت‌ها', icon: DollarSign },
   { href: '/partners', label: 'همکاران فروش', icon: Handshake },
   { href: '/reports', label: 'گزارشات', icon: BarChart2 },
   { href: '/settings', label: 'تنظیمات', icon: Settings },

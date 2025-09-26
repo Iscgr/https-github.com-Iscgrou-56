@@ -23,16 +23,21 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { agents as initialAgents } from '@/lib/data';
-import type { Agent } from '@/lib/types';
+import { agents as initialAgents, invoices as initialInvoices, payments as initialPayments } from '@/lib/data';
+import type { Agent, Invoice, Payment } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { AgentFormDialog } from './_components/agent-form-dialog';
+import { PaymentFormDialog } from '../payments/_components/payment-form-dialog';
 import { useToast } from '@/hooks/use-toast';
 
 export default function AgentsPage() {
   const [agents, setAgents] = useState<Agent[]>(initialAgents);
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices);
+  const [payments, setPayments] = useState<Payment[]>(initialPayments);
+  const [isAgentFormOpen, setIsAgentFormOpen] = useState(false);
+  const [isPaymentFormOpen, setIsPaymentFormOpen] = useState(false);
+  const [selectedAgent, setSelectedAgent] = useState<Agent | undefined>(undefined);
   const { toast } = useToast();
 
   const handleAgentAdded = (newAgent: Agent) => {
@@ -43,16 +48,40 @@ export default function AgentsPage() {
     });
   };
 
+  const handleOpenPaymentDialog = (agent: Agent) => {
+    setSelectedAgent(agent);
+    setIsPaymentFormOpen(true);
+  };
+  
+  const handlePaymentAdded = (newPayment: Payment, updatedAgent: Agent, updatedInvoice: Invoice) => {
+     setPayments(prev => [newPayment, ...prev].sort((a,b) => Date.parse(b.date) - Date.parse(a.date)));
+     setAgents(prev => prev.map(a => a.id === updatedAgent.id ? updatedAgent : a));
+     setInvoices(prev => prev.map(i => i.id === updatedInvoice.id ? updatedInvoice : i));
+     toast({
+        title: 'پرداخت جدید ثبت شد',
+        description: `پرداخت به مبلغ ${new Intl.NumberFormat('fa-IR').format(newPayment.amount)} برای نماینده ${updatedAgent.name} ثبت شد.`,
+     });
+  };
+
+
   return (
     <>
       <PageHeader title="مدیریت نمایندگان">
-        <Button onClick={() => setIsFormOpen(true)}>افزودن نماینده جدید</Button>
+        <Button onClick={() => setIsAgentFormOpen(true)}>افزودن نماینده جدید</Button>
       </PageHeader>
 
       <AgentFormDialog
-        isOpen={isFormOpen}
-        onOpenChange={setIsFormOpen}
+        isOpen={isAgentFormOpen}
+        onOpenChange={setIsAgentFormOpen}
         onAgentAdded={handleAgentAdded}
+      />
+
+      <PaymentFormDialog
+        isOpen={isPaymentFormOpen}
+        onOpenChange={setIsPaymentFormOpen}
+        onPaymentAdded={handlePaymentAdded}
+        agent={selectedAgent}
+        invoices={invoices.filter(i => i.agentId === selectedAgent?.id && (i.status === 'unpaid' || i.status === 'partial' || i.status === 'overdue'))}
       />
 
       <Card>
@@ -121,7 +150,7 @@ export default function AgentsPage() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>اقدامات</DropdownMenuLabel>
                         <DropdownMenuItem>ویرایش</DropdownMenuItem>
-                        <DropdownMenuItem>ثبت پرداخت</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleOpenPaymentDialog(agent)}>ثبت پرداخت</DropdownMenuItem>
                         <DropdownMenuItem asChild>
                            <Link href={agent.portalLink}>مشاهده پورتال</Link>
                         </DropdownMenuItem>

@@ -2,7 +2,7 @@
 export type Agent = {
   id: string;
   name: string;
-  code: string; // As per ERD
+  code: string;
   contact: {
     email: string;
     phone: string;
@@ -12,21 +12,22 @@ export type Agent = {
   status: 'active' | 'inactive';
   totalSales: number;
   totalPayments: number;
-  totalDebt: number; // As per ERD
+  totalDebt: number;
   avatarUrl: string;
   portalLink: string;
-  createdAt: string; // As per ERD
+  publicId: string;
+  createdAt: string;
 };
 
 export type Invoice = {
   id: string;
-  invoiceNumber: string; // As per ERD
+  invoiceNumber: string;
   agentId: string;
   agentName: string;
-  date: string; // issue_date in ERD
+  date: string;
   dueDate: string;
   amount: number;
-  status: 'paid' | 'unpaid' | 'partial' | 'overdue' | 'cancelled'; // Extended statuses
+  status: 'paid' | 'unpaid' | 'partial' | 'overdue' | 'cancelled';
   items: {
     description: string;
     amount: number;
@@ -39,7 +40,7 @@ export type Payment = {
   invoiceId: string;
   date: string; // payment_date
   amount: number;
-  referenceNumber?: string; // As per ERD
+  referenceNumber?: string;
 };
 
 export type SalesPartner = {

@@ -9,11 +9,12 @@ export const agents: Agent[] = [
     contact: { email: 'agent1@example.com', phone: '09123456781' },
     salesPartnerId: 'partner-1',
     status: 'active',
-    totalSales: 15000000,
+    totalSales: 22000000,
     totalPayments: 12000000,
-    totalDebt: 3000000,
+    totalDebt: 10000000,
     avatarUrl: 'https://picsum.photos/seed/agent1/100/100',
     portalLink: '/portal/agent-1',
+    publicId: 'pub-agent-1-xyz',
     createdAt: '2023-01-15T10:30:00Z',
   },
   {
@@ -28,6 +29,7 @@ export const agents: Agent[] = [
     totalDebt: 0,
     avatarUrl: 'https://picsum.photos/seed/agent2/100/100',
     portalLink: '/portal/agent-2',
+    publicId: 'pub-agent-2-abc',
     createdAt: '2023-02-20T11:00:00Z',
   },
   {
@@ -42,6 +44,7 @@ export const agents: Agent[] = [
     totalDebt: 0,
     avatarUrl: 'https://picsum.photos/seed/agent3/100/100',
     portalLink: '/portal/agent-3',
+    publicId: 'pub-agent-3-def',
     createdAt: '2023-03-01T18:00:00Z',
   },
 ];
@@ -54,9 +57,9 @@ export const invoices: Invoice[] = [
     agentName: 'نماینده یک',
     date: '2023-10-01',
     dueDate: '2023-10-15',
-    amount: 3000000,
+    amount: 10000000,
     status: 'unpaid',
-    items: [{ description: 'مصرف ماهانه', amount: 3000000 }],
+    items: [{ description: 'مصرف ماهانه مهر', amount: 10000000 }],
   },
   {
     id: 'inv-2',
@@ -67,7 +70,7 @@ export const invoices: Invoice[] = [
     dueDate: '2023-09-15',
     amount: 5000000,
     status: 'paid',
-    items: [{ description: 'مصرف ماهانه', amount: 5000000 }],
+    items: [{ description: 'مصرف ماهانه شهریور', amount: 5000000 }],
   },
   {
     id: 'inv-3',
@@ -78,7 +81,7 @@ export const invoices: Invoice[] = [
     dueDate: '2023-10-20',
     amount: 10000000,
     status: 'paid',
-    items: [{ description: 'مصرف ماهانه', amount: 10000000 }],
+    items: [{ description: 'مصرف ماهانه مهر', amount: 10000000 }],
   },
   {
     id: 'inv-4',
@@ -88,8 +91,8 @@ export const invoices: Invoice[] = [
     date: '2023-08-01',
     dueDate: '2023-08-15',
     amount: 7000000,
-    status: 'overdue',
-    items: [{ description: 'مصرف ماهانه', amount: 7000000 }],
+    status: 'paid',
+    items: [{ description: 'مصرف ماهانه مرداد', amount: 7000000 }],
   },
 ];
 
@@ -98,7 +101,7 @@ export const salesPartners: SalesPartner[] = [
     id: 'partner-1',
     name: 'همکار فروش الف',
     commissionRate: 5,
-    totalSubAgentSales: 40000000,
+    totalSubAgentSales: 47000000,
   },
   {
     id: 'partner-2',
@@ -111,8 +114,9 @@ export const salesPartners: SalesPartner[] = [
 export const payments: Payment[] = [
     { id: 'pay-1', agentId: 'agent-1', date: '2023-09-10', amount: 5000000, invoiceId: 'inv-2' },
     { id: 'pay-2', agentId: 'agent-2', date: '2023-10-10', amount: 10000000, invoiceId: 'inv-3' },
+    { id: 'pay-3', agentId: 'agent-1', date: '2023-08-10', amount: 7000000, invoiceId: 'inv-4' },
 ];
 
-export const getAgentById = (id: string) => agents.find(a => a.id === id || a.portalLink.endsWith(id));
+export const getAgentById = (id: string) => agents.find(a => a.id === id || a.publicId === id);
 export const getInvoicesByAgentId = (agentId: string) => invoices.filter(i => i.agentId === agentId);
 export const getPaymentsByAgentId = (agentId: string) => payments.filter(p => p.agentId === agentId);

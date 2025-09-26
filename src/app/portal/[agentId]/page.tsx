@@ -39,6 +39,7 @@ export default function AgentPortalPage({
 }: {
   params: { agentId: string };
 }) {
+  // The agentId in the URL could be the publicId or the internal id
   const agent = getAgentById(params.agentId);
   if (!agent) {
     notFound();
@@ -55,7 +56,9 @@ export default function AgentPortalPage({
 
   return (
     <div className="space-y-8">
-      <PageHeader title={`پورتال مالی ${agent.name}`} />
+      <PageHeader title={`پورتال مالی ${agent.name}`}>
+        <div className="text-sm text-muted-foreground font-code">کد نماینده: {agent.code}</div>
+      </PageHeader>
 
       <div className="grid gap-4 md:grid-cols-3">
         {summaryData.map(item => (
@@ -86,11 +89,13 @@ export default function AgentPortalPage({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {invoices.map((invoice) => (
+              {invoices.length === 0 ? (
+                <TableRow><TableCell colSpan={4} className="text-center h-24">هیچ فاکتوری یافت نشد.</TableCell></TableRow>
+              ) : invoices.map((invoice) => (
                 <TableRow key={invoice.id}>
                   <TableCell className="font-code">{invoice.invoiceNumber}</TableCell>
                   <TableCell className="font-code">{invoice.date}</TableCell>
-                  <TableCell className="font-code">{new Intl.NumberFormat('fa-IR').format(invoice.amount)}</TableCell>
+                  <TableCell className="font-code">{new Intl.NumberFormat('fa-IR').format(invoice.amount)} تومان</TableCell>
                   <TableCell>
                     <Badge variant="outline" className={cn(statusMap[invoice.status].className, 'hover:bg-none')}>
                       {statusMap[invoice.status].label}
@@ -111,19 +116,21 @@ export default function AgentPortalPage({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>شناسه</TableHead>
                 <TableHead>تاریخ</TableHead>
                 <TableHead>مبلغ</TableHead>
                 <TableHead>مربوط به فاکتور</TableHead>
+                 <TableHead>شماره مرجع</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {payments.map((payment) => (
+               {payments.length === 0 ? (
+                <TableRow><TableCell colSpan={4} className="text-center h-24">هیچ پرداختی یافت نشد.</TableCell></TableRow>
+              ) : payments.map((payment) => (
                 <TableRow key={payment.id}>
-                  <TableCell className="font-code">{payment.id}</TableCell>
                   <TableCell className="font-code">{payment.date}</TableCell>
-                  <TableCell className="font-code text-green-400">{new Intl.NumberFormat('fa-IR').format(payment.amount)}</TableCell>
-                  <TableCell className="font-code">{invoices.find(i => i.id === payment.invoiceId)?.invoiceNumber || payment.invoiceId}</TableCell>
+                  <TableCell className="font-code text-green-400">{new Intl.NumberFormat('fa-IR').format(payment.amount)} تومان</TableCell>
+                  <TableCell className="font-code">{invoices.find(i => i.id === payment.invoiceId)?.invoiceNumber || '---'}</TableCell>
+                   <TableCell className="font-code">{payment.referenceNumber || '---'}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
