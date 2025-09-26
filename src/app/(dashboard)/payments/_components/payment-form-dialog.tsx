@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useActionState, useTransition } from 'react';
+import { useEffect, useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 import {
   Dialog,
@@ -33,6 +33,7 @@ type Props = {
   onPaymentAdded: (payment: Payment, agent: Agent, invoice: Invoice) => void;
   agent?: Agent;
   invoices: Invoice[];
+  defaultInvoiceId?: string;
 };
 
 const initialState: PaymentFormState = {
@@ -49,7 +50,7 @@ function SubmitButton() {
     )
 }
 
-export function PaymentFormDialog({ isOpen, onOpenChange, onPaymentAdded, agent, invoices }: Props) {
+export function PaymentFormDialog({ isOpen, onOpenChange, onPaymentAdded, agent, invoices, defaultInvoiceId }: Props) {
   const [state, formAction] = useActionState(recordPayment, initialState);
   const { toast } = useToast();
 
@@ -63,7 +64,7 @@ export function PaymentFormDialog({ isOpen, onOpenChange, onPaymentAdded, agent,
         toast({
             variant: 'destructive',
             title: 'خطا در فرم',
-            description: 'لطفا خطاها را برطرف کرده و مجددا تلاش کنید.'
+            description: state.message
         })
     }
   }, [state, onOpenChange, onPaymentAdded, toast]);
@@ -84,7 +85,7 @@ export function PaymentFormDialog({ isOpen, onOpenChange, onPaymentAdded, agent,
             <div className="space-y-4 py-4">
                 <div className="space-y-2">
                     <Label htmlFor="invoiceId">فاکتور</Label>
-                    <Select name="invoiceId" required>
+                    <Select name="invoiceId" required defaultValue={defaultInvoiceId}>
                         <SelectTrigger id="invoiceId">
                             <SelectValue placeholder="یک فاکتور پرداخت‌نشده را انتخاب کنید" />
                         </SelectTrigger>

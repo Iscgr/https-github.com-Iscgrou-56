@@ -76,13 +76,15 @@ export default function AgentsPage() {
         onAgentAdded={handleAgentAdded}
       />
 
-      <PaymentFormDialog
-        isOpen={isPaymentFormOpen}
-        onOpenChange={setIsPaymentFormOpen}
-        onPaymentAdded={handlePaymentAdded}
-        agent={selectedAgent}
-        invoices={invoices.filter(i => i.agentId === selectedAgent?.id && (i.status === 'unpaid' || i.status === 'partial' || i.status === 'overdue'))}
-      />
+      {selectedAgent && (
+        <PaymentFormDialog
+          isOpen={isPaymentFormOpen}
+          onOpenChange={setIsPaymentFormOpen}
+          onPaymentAdded={handlePaymentAdded}
+          agent={selectedAgent}
+          invoices={invoices.filter(i => i.agentId === selectedAgent?.id && (i.status === 'unpaid' || i.status === 'partial' || i.status === 'overdue'))}
+        />
+      )}
 
       <Card>
         <CardContent>

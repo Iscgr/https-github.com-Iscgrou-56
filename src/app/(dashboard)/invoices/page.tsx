@@ -24,10 +24,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { invoices as initialInvoices } from "@/lib/data";
-import type { Invoice } from '@/lib/types';
+import { invoices as initialInvoices, agents as initialAgents, payments as initialPayments } from "@/lib/data";
+import type { Agent, Invoice, Payment } from '@/lib/types';
 import { cn } from "@/lib/utils";
 import { UploadUsageDataDialog } from './_components/upload-usage-data-dialog';
+import { PaymentFormDialog } from '../payments/_components/payment-form-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { sendInvoiceNotification } from './actions';
 import Link from 'next/link';
@@ -41,12 +42,35 @@ const statusMap = {
 };
 
 export default function InvoicesPage() {
+  const [agents, setAgents] = useState<Agent[]>(initialAgents);
   const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices.sort((a,b) => Date.parse(b.date) - Date.parse(a.date)));
+  const [payments, setPayments] = useState<Payment[]>(initialPayments);
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+  const [isPaymentFormOpen, setIsPaymentFormOpen] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | undefined>(undefined);
+  const { toast } = useToast();
 
   const handleNewInvoices = (newInvoices: Invoice[]) => {
     setInvoices(prevInvoices => [...newInvoices, ...prevInvoices].sort((a,b) => Date.parse(b.date) - Date.parse(a.date)));
   };
+
+  const handleOpenPaymentDialog = (invoice: Invoice) => {
+    setSelectedInvoice(invoice);
+    setIsPaymentFormOpen(true);
+  };
+
+  const handlePaymentAdded = (newPayment: Payment, updatedAgent: Agent, updatedInvoice: Invoice) => {
+     setPayments(prev => [newPayment, ...prev].sort((a,b) => Date.parse(b.date) - Date.parse(a.date)));
+     setAgents(prev => prev.map(a => a.id === updatedAgent.id ? updatedAgent : a));
+     setInvoices(prev => prev.map(i => i.id === updatedInvoice.id ? updatedInvoice : i));
+     toast({
+        title: 'پرداخت جدید ثبت شد',
+        description: `پرداخت به مبلغ ${new Intl.NumberFormat('fa-IR').format(newPayment.amount)} برای نماینده ${updatedAgent.name} ثبت شد.`,
+     });
+  };
+
+  const selectedAgent = agents.find(a => a.id === selectedInvoice?.agentId);
+
 
   return (
     <Tabs defaultValue="all">
@@ -70,6 +94,18 @@ export default function InvoicesPage() {
         onNewInvoices={handleNewInvoices}
       />
       
+      {selectedAgent && selectedInvoice && (
+        <PaymentFormDialog
+          isOpen={isPaymentFormOpen}
+          onOpenChange={setIsPaymentFormOpen}
+          onPaymentAdded={handlePaymentAdded}
+          agent={selectedAgent}
+          invoices={[selectedInvoice]}
+          defaultInvoiceId={selectedInvoice.id}
+        />
+      )}
+
+      
       <TabsList className="grid w-full grid-cols-5 mb-4">
         <TabsTrigger value="all">همه</TabsTrigger>
         <TabsTrigger value="unpaid">پرداخت نشده</TabsTrigger>
@@ -81,7 +117,7 @@ export default function InvoicesPage() {
       <TabsContent value="all">
         <Card>
           <CardContent>
-            <InvoiceTable invoiceList={invoices} />
+            <InvoiceTable invoiceList={invoices} onRecordPayment={handleOpenPaymentDialog} />
           </CardContent>
         </Card>
       </TabsContent>
@@ -89,7 +125,7 @@ export default function InvoicesPage() {
         <TabsContent key={status} value={status}>
             <Card>
                 <CardContent>
-                    <InvoiceTable invoiceList={invoices.filter(i => i.status === status)} />
+                    <InvoiceTable invoiceList={invoices.filter(i => i.status === status)} onRecordPayment={handleOpenPaymentDialog}/>
                 </CardContent>
             </Card>
         </TabsContent>
@@ -98,7 +134,7 @@ export default function InvoicesPage() {
   );
 }
 
-function InvoiceTable({ invoiceList }: { invoiceList: Invoice[] }) {
+function InvoiceTable({ invoiceList, onRecordPayment }: { invoiceList: Invoice[]; onRecordPayment: (invoice: Invoice) => void; }) {
     const { toast } = useToast();
     const [notifyingInvoiceId, setNotifyingInvoiceId] = useState<string | null>(null);
 
@@ -177,7 +213,7 @@ function InvoiceTable({ invoiceList }: { invoiceList: Invoice[] }) {
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>اقدامات</DropdownMenuLabel>
                   <DropdownMenuItem>مشاهده جزئیات</DropdownMenuItem>
-                  <DropdownMenuItem>ثبت پرداخت</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onRecordPayment(invoice)}>ثبت پرداخت</DropdownMenuItem>
                    <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => handleSendNotification(invoice)} disabled={notifyingInvoiceId === invoice.id}>
                     ارسال نوتیفیکیشن تلگرام
