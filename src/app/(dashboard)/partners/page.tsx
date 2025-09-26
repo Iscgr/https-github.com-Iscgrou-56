@@ -1,3 +1,7 @@
+
+'use client';
+
+import { useState } from 'react';
 import { MoreHorizontal } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -17,18 +21,57 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Card, CardContent } from "@/components/ui/card";
-import { salesPartners } from "@/lib/data";
+import { salesPartners as initialPartners } from "@/lib/data";
+import { PartnerFormDialog } from './_components/partner-form-dialog';
+import { useToast } from '@/hooks/use-toast';
+import type { SalesPartner } from '@/lib/types';
+
 
 export default function PartnersPage() {
+  const [partners, setPartners] = useState<SalesPartner[]>(initialPartners);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedPartner, setSelectedPartner] = useState<SalesPartner | undefined>(undefined);
+  const { toast } = useToast();
+
   const calculateCommission = (totalSales: number, commissionRate: number) => {
     return (totalSales * commissionRate) / 100;
   };
+  
+  const handleFormOpen = (partner?: SalesPartner) => {
+    setSelectedPartner(partner);
+    setIsFormOpen(true);
+  }
+
+  const handlePartnerChange = (changedPartner: SalesPartner) => {
+     const isNew = !partners.some(p => p.id === changedPartner.id);
+     if (isNew) {
+        setPartners(prev => [changedPartner, ...prev]);
+        toast({
+            title: 'همکار جدید اضافه شد',
+            description: `همکار فروش "${changedPartner.name}" با موفقیت اضافه شد.`,
+        });
+     } else {
+        setPartners(prev => prev.map(p => p.id === changedPartner.id ? changedPartner : p));
+        toast({
+            title: 'همکار ویرایش شد',
+            description: `اطلاعات همکار فروش "${changedPartner.name}" بروزرسانی شد.`,
+        });
+     }
+  }
 
   return (
     <>
       <PageHeader title="مدیریت همکاران فروش">
-        <Button>افزودن همکار جدید</Button>
+        <Button onClick={() => handleFormOpen()}>افزودن همکار جدید</Button>
       </PageHeader>
+      
+      <PartnerFormDialog
+        isOpen={isFormOpen}
+        onOpenChange={setIsFormOpen}
+        onPartnerChanged={handlePartnerChange}
+        partner={selectedPartner}
+      />
+
       <Card>
         <CardContent>
           <Table>
@@ -44,7 +87,7 @@ export default function PartnersPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {salesPartners.map((partner) => (
+              {partners.map((partner) => (
                 <TableRow key={partner.id}>
                   <TableCell className="font-medium">{partner.name}</TableCell>
                   <TableCell className="font-code">{partner.commissionRate}%</TableCell>
@@ -70,7 +113,7 @@ export default function PartnersPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>اقدامات</DropdownMenuLabel>
-                        <DropdownMenuItem>ویرایش</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleFormOpen(partner)}>ویرایش</DropdownMenuItem>
                         <DropdownMenuItem>مشاهده نمایندگان</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
