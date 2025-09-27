@@ -4,15 +4,11 @@
  * This service provides a generic, configurable, and resilient way to process file uploads.
  * It incorporates retry policies for transient errors and a dead-letter queue for poison pill messages.
  */
-
-import { createIdempotentInvoice } from './data';
-import { Invoice } from './types';
-
 // --- Configuration for the Importer ---
 
 export interface ImporterConfig<T> {
   // Parses a raw row (e.g., from a CSV) into a structured type T
-  parseRow: (row: any) => T;
+  parseRow: (row: unknown) => T;
   // Validates the structured data
   validateRow: (data: T) => { isValid: boolean; errors: string[] };
   // Processes a single, validated data object
@@ -29,7 +25,7 @@ interface DeadLetter<T> {
 }
 
 // In a real system, this would be a persistent queue like SQS DLQ, Redis, or a DB table.
-const deadLetterQueue: DeadLetter<any>[] = [];
+const deadLetterQueue: DeadLetter<unknown>[] = [];
 
 const addToDLQ = <T>(batchJobId: string, rowData: T, reason: string) => {
   const deadLetter: DeadLetter<T> = {
@@ -38,7 +34,7 @@ const addToDLQ = <T>(batchJobId: string, rowData: T, reason: string) => {
     rowData,
     reason,
   };
-  deadLetterQueue.push(deadLetter);
+  deadLetterQueue.push(deadLetter as DeadLetter<unknown>);
   console.error(`[DLQ] Added to Dead Letter Queue. Job: ${batchJobId}, Reason: ${reason}`, rowData);
 };
 
@@ -65,11 +61,12 @@ const processRowResiliently = async <T>(
       }
       
       return { success: true, message: 'Row processed successfully.' };
-    } catch (error: any) {
+    } catch (error: unknown) {
       // This catch block is for *transient* or unexpected errors (e.g., network, DB connection)
-      console.warn(`[Importer] Attempt ${attempts} failed: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : JSON.stringify(error);
+      console.warn(`[Importer] Attempt ${attempts} failed: ${errorMessage}`);
       if (attempts >= maxRetries) {
-        addToDLQ(batchJobId, rowData, `Failed after ${maxRetries} attempts: ${error.message}`);
+        addToDLQ(batchJobId, rowData, `Failed after ${maxRetries} attempts: ${errorMessage}`);
         return { success: false, message: `Row failed permanently and was moved to DLQ.` };
       }
       // Exponential backoff
@@ -85,7 +82,7 @@ const processRowResiliently = async <T>(
 // --- Public Service API ---
 
 export const DataImporterService = {
-  processFile: async <T>(fileContent: any[], config: ImporterConfig<T>, batchJobId: string) => {
+  processFile: async <T>(fileContent: Array<unknown>, config: ImporterConfig<T>, batchJobId: string) => {
     console.log(`[Importer] Starting to process file for batch job '${batchJobId}' with ${fileContent.length} rows.`);
     
     const results = {

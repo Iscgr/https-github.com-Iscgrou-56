@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>گزارش تکمیل چک‌لیست MarFaNet</title>
+    <style>
+      :root {
+        color-scheme: dark light;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Vazirmatn", "IRANSans", system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        background: #0f172a;
+        color: #e2e8f0;
+        line-height: 1.7;
+        padding: 2.5rem 1.5rem 4rem;
+      }
+
+      header {
+        max-width: 960px;
+        margin: 0 auto 2.5rem auto;
+        text-align: center;
+      }
+
+      h1 {
+        font-size: clamp(2rem, 3vw, 2.6rem);
+        color: #38bdf8;
+        margin-bottom: 0.5rem;
+      }
+
+      h2 {
+        color: #f8fafc;
+        margin-top: 2.5rem;
+        font-size: clamp(1.6rem, 2vw, 2rem);
+        border-right: 4px solid #38bdf8;
+        padding-right: 0.75rem;
+      }
+
+      section {
+        max-width: 960px;
+        margin: 0 auto 1.5rem auto;
+        background: #1e293b;
+        border-radius: 18px;
+        padding: 1.75rem;
+        box-shadow: 0 35px 60px -30px rgba(15, 23, 42, 0.8);
+        border: 1px solid rgba(148, 163, 184, 0.1);
+      }
+
+      p {
+        margin: 0 0 1rem 0;
+      }
+
+      ul {
+        margin: 0;
+        padding-right: 1.25rem;
+      }
+
+      li + li {
+        margin-top: 0.65rem;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: rgba(34, 197, 94, 0.18);
+        color: #4ade80;
+        border-radius: 999px;
+        padding: 0.45rem 1rem;
+        font-weight: 600;
+        font-size: 0.95rem;
+      }
+
+      .badge svg {
+        width: 1.1rem;
+        height: 1.1rem;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+      }
+
+      .card {
+        background: rgba(15, 23, 42, 0.75);
+        border-radius: 14px;
+        padding: 1.2rem 1.25rem;
+        border: 1px solid rgba(56, 189, 248, 0.15);
+      }
+
+      .card h3 {
+        margin: 0 0 0.65rem 0;
+        font-size: 1.1rem;
+        color: #bae6fd;
+      }
+
+      code {
+        font-family: "Fira Code", "Ubuntu Mono", SFMono-Regular, Consolas, monospace;
+        background: rgba(15, 23, 42, 0.85);
+        padding: 0.2rem 0.4rem;
+        border-radius: 6px;
+        color: #f8fafc;
+      }
+
+      footer {
+        max-width: 960px;
+        margin: 3rem auto 0 auto;
+        text-align: center;
+        font-size: 0.9rem;
+        color: #94a3b8;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 6L9 17l-5-5"></path>
+        </svg>
+        چک‌لیست MarFaNet تکمیل شد
+      </div>
+      <h1>گزارش نهایی پایش پایداری و امنیت MarFaNet</h1>
+      <p>
+        این سند خلاصهٔ اقداماتی است که برای گذار از ذخیره‌سازی درون‌حافظه‌ای به لایهٔ ماندگار، ایمن‌سازی
+        تنظیمات حساس و جلوگیری از پردازش تکراری در جریان Genkit انجام شد.
+      </p>
+    </header>
+
+    <section>
+      <h2>۱. امنیت تنظیمات سیستم</h2>
+      <p>
+        مقداردهی تنظیمات حساس دیگر به صورت متن ساده ذخیره نمی‌شود. لایهٔ جدید <code>SecureSettings</code> با
+        رمزنگاری AES-256-GCM و مُهر نسخه <code>v1</code> پیاده‌سازی شد. تمام مسیرهای به‌روزرسانی اکنون ارزش‌های
+        رمزگذاری‌شده را ذخیره کرده و برای ممیزی فقط دادهٔ ماسک‌شده ثبت می‌شود.
+      </p>
+      <div class="grid">
+        <div class="card">
+          <h3>کتابخانهٔ امنیتی تازه</h3>
+          <ul>
+            <li>ایجاد فایل <code>src/lib/security/secure-settings.ts</code> با متدهای <code>encrypt</code> و <code>decrypt</code>.</li>
+            <li>اجبار وجود متغیر <code>SETTINGS_SECRET</code> در محیط‌های Production.</li>
+            <li>یادآوری در لاگ برای محیط توسعه هنگام استفاده از کلید پیش‌فرض.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>سرویس تنظیمات</h3>
+          <ul>
+            <li>خواندن مقدار دیکریپت‌شده برای نمایش یا مصرف داخلی.</li>
+            <li>ثبت مقدار ماسک‌شده (مثلاً <code>pa***et</code>) در ممیزی و <code>SettingsAuditLog</code>.</li>
+            <li>ارسال هشدار ادمین با مقدار واقعی جهت نظارت داخلی.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Seed اولیه</h3>
+          <ul>
+            <li>استفاده از <code>encryptSettingValue</code> برای مقدار <code>payments.gateway.secret</code>.</li>
+            <li>هم‌راستاسازی enum‌ها با <code>@/generated/prisma</code> برای جلوگیری از ناسازگاری‌ها.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>۲. پایداری جریان Genkit</h2>
+      <p>
+        جریان <code>validate-and-aggregate-usage-data</code> اکنون هش‌های پردازش‌شده را در پایگاه داده ذخیره می‌کند.
+        این تغییر مانع پردازش مجدد داده‌ها در اجراهای بعدی می‌شود و پایش دقیق‌تر را ممکن می‌سازد.
+      </p>
+      <div class="grid">
+        <div class="card">
+          <h3>اقدامات اصلی</h3>
+          <ul>
+            <li>افزودن متدهای <code>findExisting</code> و <code>markProcessedMany</code> به <code>UsageRepository</code>.</li>
+            <li>اجرای بررسی قبل از پردازش برای حذف هش‌های تکراری (ورودی یا پایگاه داده).</li>
+            <li>ثبت انبوه هش‌های جدید در یک تراکنش اتمیک.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>نتیجه</h3>
+          <ul>
+            <li>قابلیت ریکاوری پس از خطا بدون نگرانی از دو بار ارسال داده.</li>
+            <li>پشتیبانی از پاک‌سازی دوره‌ای با <code>pruneOlderThan</code> برای کنترل حجم.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>۳. تکمیل چک‌لیست</h2>
+      <p>
+        تمام موارد باز در لایهٔ زیرساخت اکنون پوشش داده شده‌اند. چک‌لیست زیر منعکس‌کنندهٔ وضعیت جدید پروژه است.
+      </p>
+      <ul>
+        <li>✔️ رمزنگاری و ممیزی تنظیمات حساس (بند Infrastructure-3)</li>
+        <li>✔️ پایایی هش‌های پردازش‌شدهٔ Genkit (بند Infrastructure-4)</li>
+        <li>✔️ سایر بندها در لایه‌های Presentation، Application، Business، Domain پیش‌تر بسته شده‌اند.</li>
+      </ul>
+    </section>
+
+    <footer>
+      <p>آخرین به‌روزرسانی: ۵ مهر ۱۴۰۴ (۲۶ سپتامبر ۲۰۲۵)</p>
+    </footer>
+  </body>
+</html>

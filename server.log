@@ -1,0 +1,78 @@
+
+> nextn@0.1.0 dev
+> next dev --turbopack -p 9002
+
+   ▲ Next.js 15.3.3 (Turbopack)
+   - Local:        http://localhost:9002
+   - Network:      http://10.0.10.134:9002
+   - Environments: .env
+
+ ✓ Starting...
+ ✓ Ready in 973ms
+ ○ Compiling / ...
+ ✓ Compiled / in 6.1s
+ GET / 200 in 6686ms
+ GET /?id=9ea24bfa-1c33-4d02-a24a-8d3f4d210683&vscodeBrowserReqId=1758980116651 200 in 1762ms
+ ○ Compiling /api/agents ...
+ ⚠ Cross origin request detected from 127.0.0.1 to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+ ✓ Compiled /api/agents in 778ms
+ GET /api/agents 200 in 910ms
+ ○ Compiling /api/invoices ...
+ ✓ Compiled /api/invoices in 611ms
+ GET /api/invoices 200 in 682ms
+ ○ Compiling /api/payments ...
+ ✓ Compiled /api/payments in 552ms
+ GET /api/payments 200 in 593ms
+ ○ Compiling /api/sales-partners ...
+ ✓ Compiled /api/sales-partners in 551ms
+ GET /api/sales-partners 200 in 591ms
+ ○ Compiling /api/agent-summaries ...
+ ✓ Compiled /api/agent-summaries in 591ms
+ GET /api/agent-summaries 200 in 634ms
+ ○ Compiling /api/internal/metrics ...
+ ✓ Compiled /api/internal/metrics in 563ms
+ GET /api/internal/metrics 200 in 597ms
+ GET / 200 in 130ms
+ ○ Compiling /agents ...
+ ✓ Compiled /agents in 1825ms
+ GET /agents 200 in 2144ms
+ ○ Compiling /invoices ...
+ ✓ Compiled /invoices in 1616ms
+ GET /invoices 200 in 1806ms
+ ○ Compiling /payments ...
+ ✓ Compiled /payments in 1775ms
+ GET /payments 200 in 1977ms
+ ○ Compiling /partners ...
+ ✓ Compiled /partners in 1424ms
+ GET /partners 200 in 1587ms
+ ○ Compiling /reports ...
+ ✓ Compiled /reports in 1504ms
+ GET /reports 200 in 1643ms
+ ○ Compiling /settings ...
+ ✓ Compiled /settings in 4.6s
+ GET /settings 200 in 5161ms
+ GET /api/agents 200 in 141ms
+ GET /api/agents 200 in 146ms
+ GET /api/agents 200 in 149ms
+ GET /api/agents 200 in 152ms
+ GET /api/agents 200 in 151ms
+ GET /api/agents 200 in 156ms
+ GET /api/agents 200 in 157ms
+ GET /api/agents 200 in 159ms
+ GET /api/agents 200 in 156ms
+ GET /api/agents 200 in 158ms
+ ○ Compiling /_not-found/page ...
+ ✓ Compiled /_not-found/page in 922ms
+ GET /api/nonexistent 404 in 970ms
+ GET /agents 200 in 41ms
+ GET /api/sales-partners 200 in 30ms
+ GET /api/sales-partners 200 in 30ms
+ ○ Compiling /agents/[agentId] ...
+ ✓ Compiled /agents/[agentId] in 1557ms
+ GET /agents/agent_2 200 in 2157ms
+ GET /partners/partner_1 404 in 28ms
+ GET /partners/partner_1 404 in 62ms
+ GET /?id=9ea24bfa-1c33-4d02-a24a-8d3f4d210683&vscodeBrowserReqId=1758980313865 200 in 156ms
+Shutting down all Genkit servers...
+[?25h

@@ -4,82 +4,116 @@
  * This service is the single source of truth for all system settings.
  */
 
-import { SystemSetting, SettingsAuditLog } from './types';
-import { randomUUID } from 'crypto';
-
-// --- Mock Database Tables ---
-export let systemSettings: SystemSetting[] = [
-    { key: 'tax.rate', value: '0.09', isSensitive: true, description: 'Current VAT rate', lastUpdatedAt: new Date().toISOString(), updatedBy: 'system' },
-    { key: 'telegram.bot.token', value: 'mock_token_12345', isSensitive: true, description: 'Telegram Bot API Token', lastUpdatedAt: new Date().toISOString(), updatedBy: 'system' },
-    { key: 'portal.title', value: 'MarFaNet Agent Portal', isSensitive: false, description: 'Public title for the agent portal', lastUpdatedAt: new Date().toISOString(), updatedBy: 'system' },
-];
-
-export let settingsAuditLog: SettingsAuditLog[] = [];
+import { getRepositories, withUnitOfWork } from './persistence/unit-of-work';
+import { METRIC_SETTINGS_RESULTS, recordSettingsUpdate } from './observability/metrics';
+import {
+  decryptSettingValue,
+  encryptSettingValue,
+  maskSensitiveValue,
+} from './security/secure-settings';
 
 // Mock notification service
-const sendAdminNotification = (setting: SystemSetting, oldValue: string) => {
-    console.warn(`[ADMIN NOTIFICATION] Sensitive setting '${setting.key}' was changed from '${oldValue}' to '${setting.value}' by user '${setting.updatedBy}'.`);
+const sendAdminNotification = (
+  setting: { key: string; value: string; updatedBy: string },
+  oldValue: string,
+) => {
+  console.warn(
+    `[ADMIN NOTIFICATION] Sensitive setting '${setting.key}' was changed from '${oldValue}' to '${setting.value}' by user '${setting.updatedBy}'.`,
+  );
 };
 
 
 export const SettingsService = {
 
-  getSetting: (key: string): SystemSetting | undefined => {
-    // In a real app, this would be cached (see Item 6.2)
-    return systemSettings.find(s => s.key === key);
+  async getSetting(key: string) {
+    const repositories = getRepositories();
+    const setting = await repositories.settings.getSetting(key);
+    if (!setting) return null;
+
+    const resolvedValue = setting.isSensitive ? decryptSettingValue(setting.value) : setting.value;
+    return {
+      ...setting,
+      value: resolvedValue ?? '',
+    };
   },
 
-  getAllSettings: () => {
-    return systemSettings;
+  async getAllSettings() {
+    const repositories = getRepositories();
+    const settings = await repositories.settings.listSettings();
+    return settings.map((setting) => ({
+      ...setting,
+      value: (setting.isSensitive ? decryptSettingValue(setting.value) : setting.value) ?? '',
+    }));
   },
   
   /**
    * Centralized method to update a system setting.
    */
-  updateSetting: (
+  updateSetting: async (
     key: string,
     newValue: string,
     actorUserId: string
-  ): { success: boolean; message: string } => {
-    
-    const settingIndex = systemSettings.findIndex(s => s.key === key);
-    if (settingIndex === -1) {
-      return { success: false, message: `Setting with key '${key}' not found.` };
-    }
+  ): Promise<{ success: boolean; message: string }> => {
+    return withUnitOfWork(async (unit) => {
+      const setting = await unit.settings.getSetting(key);
 
-    const setting = systemSettings[settingIndex];
-    const oldValue = setting.value;
+      if (!setting) {
+        recordSettingsUpdate(METRIC_SETTINGS_RESULTS.FAILURE);
+        return { success: false, message: `Setting with key '${key}' not found.` };
+      }
 
-    if (oldValue === newValue) {
-      return { success: true, message: "No changes detected." };
-    }
+      const resolvedExisting = setting.isSensitive ? decryptSettingValue(setting.value) : setting.value;
+      const existingValue = resolvedExisting ?? '';
 
-    console.log(`[SettingsService] Updating setting '${key}' from '${oldValue}' to '${newValue}' by user '${actorUserId}'.`);
+      if (existingValue === newValue) {
+        recordSettingsUpdate(METRIC_SETTINGS_RESULTS.NOOP);
+        return { success: true, message: 'No changes detected.' };
+      }
 
-    // 1. Create Audit Log record (Item 6.1)
-    const logEntry: SettingsAuditLog = {
-      id: `log_${randomUUID()}`,
-      settingKey: key,
-      oldValue: oldValue,
-      newValue: newValue,
-      changedAt: new Date().toISOString(),
-      changedBy: actorUserId,
-    };
-    settingsAuditLog.push(logEntry);
+      console.log(
+        `[SettingsService] Updating setting '${key}' from '${setting.isSensitive ? '[REDACTED]' : existingValue}' to '${
+          setting.isSensitive ? '[REDACTED]' : newValue
+        }' by user '${actorUserId}'.`,
+      );
 
-    // 2. Update the actual setting
-    setting.value = newValue;
-    setting.lastUpdatedAt = logEntry.changedAt;
-    setting.updatedBy = actorUserId;
+      const storedValue = setting.isSensitive ? encryptSettingValue(newValue) : newValue;
+      const auditOldValue = setting.isSensitive ? maskSensitiveValue(existingValue) : existingValue;
+      const auditNewValue = setting.isSensitive ? maskSensitiveValue(newValue) : newValue;
 
-    // 3. Handle sensitive setting notification (Item 6.4)
-    if (setting.isSensitive) {
-      sendAdminNotification(setting, oldValue);
-    }
+      const updatedSetting = await unit.settings.updateSetting(
+        key,
+        {
+          value: storedValue,
+          updatedBy: actorUserId,
+          description: setting.description ?? undefined,
+        },
+        {
+          auditOldValue,
+          auditNewValue,
+          payload: {
+            updatedBy: actorUserId,
+            description: setting.description ?? undefined,
+            value: setting.isSensitive ? '[REDACTED]' : newValue,
+          },
+        },
+      );
 
-    // 4. (Future) Invalidate cache (Item 6.2)
-    // invalidateCache(key);
+      if (updatedSetting.isSensitive) {
+        sendAdminNotification(
+          {
+            key: updatedSetting.key,
+            value: newValue,
+            updatedBy: actorUserId,
+          },
+          existingValue,
+        );
+      }
 
-    return { success: true, message: "Setting updated successfully." };
+      recordSettingsUpdate(METRIC_SETTINGS_RESULTS.SUCCESS);
+      return { success: true, message: 'Setting updated successfully.' };
+    }).catch((error) => {
+      recordSettingsUpdate(METRIC_SETTINGS_RESULTS.FAILURE);
+      throw error;
+    });
   }
 };

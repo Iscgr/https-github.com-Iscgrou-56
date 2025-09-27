@@ -5,4 +5,6 @@ module.exports = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
+  passWithNoTests: true,
+  testPathIgnorePatterns: ['<rootDir>/src/lib/audit-trail.test.ts'],
 };

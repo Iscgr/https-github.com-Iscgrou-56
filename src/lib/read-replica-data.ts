@@ -10,17 +10,90 @@ import { Invoice, Payment } from './types';
 
 // In a real application, this data would be replicated from the primary DB.
 // We are re-declaring it here to simulate isolation.
-let replicatedInvoices: Invoice[] = [
-    { id: '1', invoiceNumber: 'INV-001', agentId: '1', agentName: 'نماینده ۱', date: '2023-10-01', dueDate: '2023-10-15', amount: 1000, status: 'paid', items: [], source: 'MANUAL', batchJobId: null },
-    { id: '2', invoiceNumber: 'INV-002', agentId: '1', agentName: 'نماینده ۱', date: '2023-11-01', dueDate: '2023-11-15', amount: 1500, status: 'paid', items: [], source: 'MANUAL', batchJobId: null },
-    // Assume this invoice belongs to an agent of partner '1'
-    { id: '101', invoiceNumber: 'INV-101', agentId: '1', date: '2023-11-05', amount: 2500, status: 'paid', /* other fields */ } as Invoice,
+const iso = (value: string) => new Date(value).toISOString();
+
+const replicatedInvoices: Invoice[] = [
+    {
+        id: '1',
+        invoiceNumber: 'INV-001',
+        agentId: '1',
+        amount: 1_000_000,
+        currency: 'IRR',
+        issueDate: iso('2023-10-01'),
+        dueDate: iso('2023-10-15'),
+        status: 'PAID',
+        source: 'MANUAL',
+        batchId: null,
+        metadata: null,
+        createdAt: iso('2023-10-01'),
+        updatedAt: iso('2023-10-10'),
+    },
+    {
+        id: '2',
+        invoiceNumber: 'INV-002',
+        agentId: '1',
+        amount: 1_500_000,
+        currency: 'IRR',
+        issueDate: iso('2023-11-01'),
+        dueDate: iso('2023-11-15'),
+        status: 'PAID',
+        source: 'MANUAL',
+        batchId: null,
+        metadata: null,
+        createdAt: iso('2023-11-01'),
+        updatedAt: iso('2023-11-10'),
+    },
+    {
+        id: '101',
+        invoiceNumber: 'INV-101',
+        agentId: '1',
+        amount: 2_500_000,
+        currency: 'IRR',
+        issueDate: iso('2023-11-05'),
+        dueDate: iso('2023-11-25'),
+        status: 'PAID',
+        source: 'SYSTEM',
+        batchId: null,
+        metadata: null,
+        createdAt: iso('2023-11-05'),
+        updatedAt: iso('2023-11-12'),
+    },
 ];
 
-let replicatedPayments: Payment[] = [
-     { id: '1', agentId: '1', invoiceId: '1', date: '2023-10-10', amount: 1000 },
-     { id: '2', agentId: '1', invoiceId: '2', date: '2023-11-10', amount: 1500 },
-     { id: '101', agentId: '1', invoiceId: '101', date: '2023-11-12', amount: 2500 },
+const replicatedPayments: Payment[] = [
+    {
+        id: '1',
+        agentId: '1',
+        invoiceId: '1',
+        amount: 1_000_000,
+        method: 'EXTERNAL',
+        reference: 'BANK-1000',
+        note: null,
+        recordedAt: iso('2023-10-10'),
+        createdAt: iso('2023-10-10'),
+    },
+    {
+        id: '2',
+        agentId: '1',
+        invoiceId: '2',
+        amount: 1_500_000,
+        method: 'EXTERNAL',
+        reference: 'BANK-1500',
+        note: null,
+        recordedAt: iso('2023-11-10'),
+        createdAt: iso('2023-11-10'),
+    },
+    {
+        id: '101',
+        agentId: '1',
+        invoiceId: '101',
+        amount: 2_500_000,
+        method: 'EXTERNAL',
+        reference: 'BANK-2500',
+        note: null,
+        recordedAt: iso('2023-11-12'),
+        createdAt: iso('2023-11-12'),
+    },
 ];
 
 /**
@@ -37,12 +110,14 @@ export const getPaidInvoicesForAgents = async (agentIds: string[], startDate: st
     const endDateObj = new Date(endDate);
 
     const results = replicatedInvoices.filter(invoice => {
+        if (invoice.status !== 'PAID') return false;
+
         const payment = replicatedPayments.find(p => p.invoiceId === invoice.id);
         if (!payment) return false;
 
-        const paymentDate = new Date(payment.date);
+        const paymentDate = new Date(payment.recordedAt);
         const isInDateRange = paymentDate >= startDateObj && paymentDate <= endDateObj;
-        
+
         return agentIds.includes(invoice.agentId) && isInDateRange;
     });
 
@@ -52,7 +127,7 @@ export const getPaidInvoicesForAgents = async (agentIds: string[], startDate: st
 /**
  * Simulates a query to find refunded payments that would trigger a commission clawback.
  */
-export const findRefundedPaymentsForPartner = async (partnerId: string, startDate: string, endDate: string): Promise<Payment[]> => {
+export const findRefundedPaymentsForPartner = async (partnerId: string, _startDate: string, _endDate: string): Promise<Payment[]> => {
      console.log(`[Read Replica] Querying for refunded payments for partner ${partnerId}.`);
      // In this mock, we'll just return an empty array.
      // A real implementation would query for payments with a 'refunded' status.

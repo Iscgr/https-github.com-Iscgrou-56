@@ -5,16 +5,14 @@
  * It includes idempotency checks and robust error handling.
  */
 
-import { NotificationLog, Invoice } from './types';
-import { invoices as primaryInvoicesDB } from './data';
 import { InvoiceService } from './invoice-service';
-import { randomUUID } from 'crypto';
-
-// Mock table for Notification Logs on the primary database
-export let notificationLogs: NotificationLog[] = [];
+import { getRepositories, withUnitOfWork } from './persistence/unit-of-work';
+import { InvoiceStatus, NotificationStatus, NotificationType } from '@/generated/prisma';
 
 // Mock external service for sending notifications
-const sendNotificationAPI = async (invoice: Invoice): Promise<{ success: boolean; error?: string }> => {
+const sendNotificationAPI = async (
+  invoice: { id: string; agentId: string; invoiceNumber: string },
+): Promise<{ success: boolean; error?: string }> => {
     // Simulate potential failures
     if (invoice.agentId === 'FAIL-AGENT') { // Specific agent ID to test failure
       return { success: false, error: "Invalid email address" };
@@ -36,11 +34,9 @@ export const CronService = {
   processOverdueInvoices: async () => {
     console.log(`[CronService] Starting daily job: processOverdueInvoices...`);
     
-    // 1. Find candidate invoices (unpaid and past their due date)
+    const repositories = getRepositories();
     const today = new Date();
-    const overdueCandidates = primaryInvoicesDB.filter(
-        inv => inv.status === 'unpaid' && new Date(inv.dueDate) < today
-    );
+    const overdueCandidates = await repositories.invoices.listOverdue(today);
 
     console.log(`[CronService] Found ${overdueCandidates.length} overdue candidates.`);
 
@@ -49,10 +45,10 @@ export const CronService = {
       try {
         // 3. Idempotency Check (Item 4.2): Has a reminder been sent in the last 24 hours?
         const twentyFourHoursAgo = new Date(today.getTime() - 24 * 60 * 60 * 1000);
-        const recentLog = notificationLogs.find(
-          log => log.invoiceId === invoice.id &&
-                 log.type === 'OVERDUE_REMINDER' &&
-                 new Date(log.sentAt) > twentyFourHoursAgo
+        const recentLog = await repositories.notifications.findRecent(
+          invoice.id,
+          NotificationType.OVERDUE_REMINDER,
+          twentyFourHoursAgo,
         );
 
         if (recentLog) {
@@ -61,26 +57,29 @@ export const CronService = {
         }
 
         // 4. Update status using the centralized service
-        InvoiceService.changeStatus(invoice.id, 'overdue', 'system:cron:overdue');
+        await InvoiceService.changeStatus(invoice.id, InvoiceStatus.OVERDUE, 'system:cron:overdue');
 
         // 5. Send notification
         const notificationResult = await sendNotificationAPI(invoice);
-        
-        // 6. Log the notification attempt
-        const logEntry: NotificationLog = {
-            id: `nlog_${randomUUID()}`,
-            invoiceId: invoice.id,
-            type: 'OVERDUE_REMINDER',
-            sentAt: new Date().toISOString(),
-            status: notificationResult.success ? 'SUCCESS' : 'FAILED',
-            errorMessage: notificationResult.error || null,
-        };
-        notificationLogs.push(logEntry);
 
-      } catch (error: any) {
+        await withUnitOfWork(async (unit) => {
+          const status = notificationResult.success
+            ? NotificationStatus.SUCCESS
+            : NotificationStatus.FAILED;
+
+          await unit.notifications.logSend({
+            invoiceId: invoice.id,
+            type: NotificationType.OVERDUE_REMINDER,
+            status,
+            errorMessage: notificationResult.error ?? null,
+          });
+        });
+
+      } catch (error: unknown) {
         // This catch block ensures that if one invoice fails (e.g., DB error during status change),
         // the entire loop doesn't crash.
-        console.error(`[CronService] CRITICAL ERROR processing invoice ${invoice.id}. Skipping. Error: ${error.message}`);
+        const errorMessage = error instanceof Error ? error.message : JSON.stringify(error);
+        console.error(`[CronService] CRITICAL ERROR processing invoice ${invoice.id}. Skipping. Error: ${errorMessage}`);
       }
     }
     console.log(`[CronService] Finished daily job: processOverdueInvoices.`);

@@ -1,6 +1,6 @@
 
 import { PageHeader } from "@/components/page-header";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getTelegramSettings } from '@/lib/settings';
 import { SettingsForm } from "./_components/settings-form";
 

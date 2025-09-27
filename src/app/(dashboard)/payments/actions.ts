@@ -74,7 +74,8 @@ export const recordPayment = async (
 
     return { message: 'پرداخت با موفقیت ثبت و تسویه شد.' };
 
-  } catch (error: any) {
-      return { message: `خطا در ثبت پرداخت: ${error.message}` };
+  } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : JSON.stringify(error);
+      return { message: `خطا در ثبت پرداخت: ${errorMessage}` };
   }
 };

@@ -1,10 +1,11 @@
 "use server";
 
 import { z } from "zod";
+import { createHash, randomUUID } from "crypto";
+
+import { InvoiceSource, InvoiceStatus } from "@/generated/prisma";
 import { DataImporterService, ImporterConfig } from "@/lib/importer";
 import { createIdempotentInvoice } from "@/lib/data";
-import { Invoice } from "@/lib/types";
-import { randomUUID } from "crypto";
 
 // Define the shape of a single row in the uploaded file
 const InvoiceUploadSchema = z.object({
@@ -13,55 +14,69 @@ const InvoiceUploadSchema = z.object({
   amount: z.coerce.number().positive("Amount must be a positive number"),
   date: z.string().datetime("Date must be a valid ISO datetime string"),
   dueDate: z.string().datetime("Due date must be a valid ISO datetime string"),
+  invoiceNumber: z.string().min(1).optional(),
   description: z.string().optional().default("N/A"),
 });
 
 type InvoiceUploadData = z.infer<typeof InvoiceUploadSchema>;
 
 // Configuration for the invoice importer
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
 const invoiceImporterConfig: ImporterConfig<InvoiceUploadData> = {
-  parseRow: (row: any) => ({
-    // In a real scenario, this would map CSV columns to object keys
-    agentId: row.agentId,
-    agentName: row.agentName,
-    amount: row.amount,
-    date: row.date,
-    dueDate: row.dueDate,
-    description: row.description,
-  }),
-  
+  parseRow: (row: unknown) => {
+    const source = isRecord(row) ? row : {};
+    return {
+      agentId: String(source.agentId ?? '').trim(),
+      agentName: String(source.agentName ?? '').trim(),
+      amount: Number(source.amount ?? 0),
+      date: String(source.date ?? '').trim(),
+      dueDate: String(source.dueDate ?? '').trim(),
+      invoiceNumber: source.invoiceNumber ? String(source.invoiceNumber).trim() : undefined,
+      description: source.description ? String(source.description).trim() : 'N/A',
+    };
+  },
+
   validateRow: (data: InvoiceUploadData) => {
     const result = InvoiceUploadSchema.safeParse(data);
     return {
       isValid: result.success,
-      errors: result.success ? [] : result.error.flatten().fieldErrors.toString(),
+      errors: result.success
+        ? []
+        : Object.values(result.error.flatten().fieldErrors)
+            .flat()
+            .filter((message): message is string => Boolean(message)),
     };
   },
-  
-  processRow: async (data: InvoiceUploadData, batchJobId: string) => {
-    // This is where we connect to our data layer
-    // 1.2: Idempotency is handled here
-    const idempotencyKey = `${batchJobId}-${JSON.stringify(data)}`; // Simple hash for demo
-    
-    const invoiceData: Omit<Invoice, 'id' | 'invoiceNumber'> = {
-        agentId: data.agentId,
-        agentName: data.agentName,
-        date: data.date,
-        dueDate: data.dueDate,
-        amount: data.amount,
-        status: 'unpaid',
-        items: [{ description: data.description, amount: data.amount }],
-        // 1.1: Audit Trail is handled here
-        source: 'BATCH_UPLOAD',
-        batchJobId: batchJobId,
-    };
 
-    return createIdempotentInvoice(idempotencyKey, invoiceData);
-  }
+  processRow: async (data: InvoiceUploadData, batchJobId: string) => {
+    const deterministicKey = `${data.agentId}|${data.amount}|${data.date}|${data.dueDate}|${data.description ?? ''}`;
+    const invoiceNumber =
+      data.invoiceNumber ?? `BATCH-${createHash('sha256').update(deterministicKey).digest('hex').slice(0, 12).toUpperCase()}`;
+
+    await createIdempotentInvoice({
+      invoiceNumber,
+      agentId: data.agentId,
+      amount: data.amount,
+      issueDate: data.date,
+      dueDate: data.dueDate,
+      status: InvoiceStatus.UNPAID,
+      source: InvoiceSource.BATCH_UPLOAD,
+      metadata: {
+        batchJobId,
+        agentName: data.agentName,
+        description: data.description,
+        importerVersion: 'v1',
+      },
+    });
+
+    return { success: true, message: `Invoice ${invoiceNumber} processed.` };
+  },
 };
 
 
-export async function uploadInvoicesAction(fileContent: any[]) {
+export async function uploadInvoicesAction(fileContent: Array<unknown>) {
   const batchJobId = `job_${randomUUID()}`;
   
   console.log(`[Action] Starting invoice upload action with Batch Job ID: ${batchJobId}`);
@@ -77,11 +92,12 @@ export async function uploadInvoicesAction(fileContent: any[]) {
       data: result,
     };
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(`[Action] Critical error during invoice upload for Batch Job ID: ${batchJobId}`, error);
+    const errorMessage = error instanceof Error ? error.message : JSON.stringify(error);
     return {
         success: false,
-        message: `A critical error occurred: ${error.message}`,
+        message: `A critical error occurred: ${errorMessage}`,
     };
   }
 }

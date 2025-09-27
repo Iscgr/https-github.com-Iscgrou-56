@@ -32,12 +32,6 @@ export async function sendTelegramInvoiceNotifications(input: TelegramInvoiceNot
   return telegramInvoiceNotificationsFlow(input);
 }
 
-const telegramInvoiceNotificationsPrompt = ai.definePrompt({
-  name: 'telegramInvoiceNotificationsPrompt',
-  input: {schema: TelegramInvoiceNotificationsInputSchema},
-  prompt: `Send a Telegram notification to agent {{name}} for invoice amount {{amount}} using this portal link: {{portalLink}}. Use the following bot token: {{botToken}} and chat ID: {{chatId}}. The message should be formatted using this template: {{messageTemplate}}.`,
-});
-
 const telegramInvoiceNotificationsFlow = ai.defineFlow(
   {
     name: 'telegramInvoiceNotificationsFlow',
@@ -93,11 +87,12 @@ const telegramInvoiceNotificationsFlow = ai.defineFlow(
           message: `Failed to send Telegram notification: ${JSON.stringify(responseData)}`,
         };
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error sending Telegram notification:', error);
+      const errorMessage = error instanceof Error ? error.message : JSON.stringify(error);
       return {
         success: false,
-        message: `Error sending Telegram notification: ${error.message}`,
+        message: `Error sending Telegram notification: ${errorMessage}`,
       };
     }
   }

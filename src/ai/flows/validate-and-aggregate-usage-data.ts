@@ -8,8 +8,9 @@
  * - ValidateAndAggregateUsageDataOutput - The return type for the validateAndAggregateUsageData function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { ai } from '@/ai/genkit';
+import { getRepositories } from '@/lib/persistence/unit-of-work';
+import { z } from 'genkit';
 import crypto from 'crypto';
 
 const UsageDataSchema = z.object({
@@ -35,6 +36,8 @@ const ValidateAndAggregateUsageDataOutputSchema = z.object({
 
 export type ValidateAndAggregateUsageDataOutput = z.infer<typeof ValidateAndAggregateUsageDataOutputSchema>;
 
+type UsageData = z.infer<typeof UsageDataSchema>;
+
 export async function validateAndAggregateUsageData(input: ValidateAndAggregateUsageDataInput): Promise<ValidateAndAggregateUsageDataOutput> {
   return validateAndAggregateUsageDataFlow(input);
 }
@@ -46,7 +49,7 @@ const validateAndAggregateUsageDataFlow = ai.defineFlow({
   },
   async input => {
     try {
-      const usageDataArray = JSON.parse(input.jsonData);
+      const usageDataArray = JSON.parse(input.jsonData) as unknown;
       if (!Array.isArray(usageDataArray)) {
         return {
           aggregatedData: {},
@@ -55,44 +58,60 @@ const validateAndAggregateUsageDataFlow = ai.defineFlow({
         };
       }
 
-      let aggregatedData: Record<string, typeof UsageDataSchema._type[]> = {};
-      let newProcessedHashes: string[] = input.processedHashes ?? [];
       const validationErrors: string[] = [];
 
-      for (const data of usageDataArray) {
+      const validatedRows: Array<{ data: UsageData; hash: string }> = [];
+      for (const candidate of usageDataArray) {
         try {
-          UsageDataSchema.parse(data);
-
-          const dataString = JSON.stringify(data);
+          const parsed = UsageDataSchema.parse(candidate);
+          const dataString = JSON.stringify(parsed);
           const hash = crypto.createHash('sha256').update(dataString).digest('hex');
-
-          if (newProcessedHashes.includes(hash)) {
-            console.log("Skipping duplicate data with hash: ", hash);
-            continue; // Skip duplicate data
-          }
-
-          newProcessedHashes.push(hash);
-
-          const agentId = data.agentId;
-          if (!aggregatedData[agentId]) {
-            aggregatedData[agentId] = [];
-          }
-          aggregatedData[agentId]!.push(data);
-        } catch (error: any) {
-          validationErrors.push(`Validation error: ${error.message}`);
+          validatedRows.push({ data: parsed, hash });
+        } catch (error: unknown) {
+          const errorMessage = error instanceof Error ? error.message : JSON.stringify(error);
+          validationErrors.push(`Validation error: ${errorMessage}`);
         }
       }
 
+      const repositories = getRepositories();
+      const initialHashes = new Set(input.processedHashes ?? []);
+      const uniqueHashes = Array.from(new Set(validatedRows.map((row) => row.hash)));
+      const hashesInDb = await repositories.usage.findExisting(uniqueHashes);
+
+  const aggregatedData: Record<string, UsageData[]> = {};
+      const newHashesToPersist: string[] = [];
+
+      for (const { data, hash } of validatedRows) {
+        if (initialHashes.has(hash) || hashesInDb.has(hash)) {
+          initialHashes.add(hash);
+          continue;
+        }
+
+        initialHashes.add(hash);
+        newHashesToPersist.push(hash);
+
+        const agentId = data.agentId;
+        if (!aggregatedData[agentId]) {
+          aggregatedData[agentId] = [];
+        }
+        aggregatedData[agentId]!.push(data);
+      }
+
+      if (newHashesToPersist.length) {
+        await repositories.usage.markProcessedMany(newHashesToPersist);
+      }
+
       return {
-        aggregatedData: aggregatedData,
-        newProcessedHashes: newProcessedHashes,
-        validationErrors: validationErrors,
+        aggregatedData,
+        newProcessedHashes: Array.from(initialHashes),
+        validationErrors,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : JSON.stringify(error);
       return {
         aggregatedData: {},
         newProcessedHashes: input.processedHashes ?? [],
-        validationErrors: [`Invalid JSON: ${error.message}`],
+        validationErrors: [`Invalid JSON: ${errorMessage}`],
       };
     }
   }

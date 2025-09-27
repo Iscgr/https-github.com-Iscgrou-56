@@ -2,6 +2,8 @@ import { PageHeader } from '@/components/page-header';
 import { PartnersClientPage } from './_components/partners-client-page';
 import { getSalesPartners } from '@/lib/data';
 
+export const dynamic = 'force-dynamic';
+
 export default async function PartnersPage() {
   const partners = await getSalesPartners();
   

@@ -1,0 +1,294 @@
+[
+  {
+    "id": "P-01",
+    "layer": "presentation",
+    "category": "portal",
+    "summary": "Portal client page references agent.avatarUrl and agent.contact fields that are missing from Agent model and dataset, causing runtime failure for agent public page.",
+    "locations": [
+      "src/app/portal/[agentId]/_components/portal-client-page.tsx"
+    ],
+    "linkedEntities": [
+      "Agent",
+      "PortalClientPage"
+    ],
+    "status": "unresolved",
+    "source": "marfanet_audit_checklist.md"
+  },
+  {
+    "id": "P-02",
+    "layer": "presentation",
+    "category": "payments-ui",
+    "summary": "Dashboard payments page expects invoice.invoiceNumber and payment.referenceNumber fields that do not exist in models or dataset, breaking invoice lookup and display.",
+    "locations": [
+      "src/app/(dashboard)/payments/page.tsx"
+    ],
+    "linkedEntities": [
+      "Invoice",
+      "Payment"
+    ],
+    "status": "unresolved",
+    "source": "marfanet_audit_checklist.md"
+  },
+  {
+    "id": "P-03",
+    "layer": "presentation",
+    "category": "navigation",
+    "summary": "Dashboard sidebar only highlights an item on exact route match, so nested routes such as /agents/[id] remain without active state.",
+    "locations": [
+      "src/app/(dashboard)/layout.tsx"
+    ],
+    "linkedEntities": [
+      "DashboardSidebar"
+    ],
+    "status": "unresolved",
+    "source": "marfanet_audit_checklist.md"
+  },
+  {
+    "id": "P-04",
+    "layer": "presentation",
+    "category": "invoices-ui",
+    "summary": "Invoice table component uses the Badge UI component without importing it, leading to build failures when type checking is enforced.",
+    "locations": [
+      "src/app/(dashboard)/invoices/_components/invoice-table.tsx"
+    ],
+    "linkedEntities": [
+      "InvoiceTable"
+    ],
+    "status": "unresolved",
+    "source": "marfanet_audit_checklist.md"
+  },
+  {
+    "id": "A-01",
+    "layer": "application",
+    "category": "server-actions",
+    "summary": "saveAgentAction imports getAllAgentIds from data.ts where it is not defined, causing module load failure.",
+    "locations": [
+      "src/app/(dashboard)/agents/actions.ts",
+      "src/lib/data.ts"
+    ],
+    "linkedEntities": [
+      "saveAgentAction",
+      "getAllAgentIds"
+    ],
+    "status": "unresolved",
+    "source": "marfanet_audit_checklist.md"
+  },
+  {
+    "id": "A-02",
+    "layer": "application",
+    "category": "admin-tools",
+    "summary": "rebuildSummariesAction relies on stubbed rebuildAllSummaries implementation that is empty, so financial aggregate rebuild never runs.",
+    "locations": [
+      "src/app/(dashboard)/agents/actions.ts",
+      "src/lib/data.ts"
+    ],
+    "linkedEntities": [
+      "rebuildSummariesAction",
+      "rebuildAllSummaries"
+    ],
+    "status": "unresolved",
+    "source": "marfanet_audit_checklist.md"
+  },
+  {
+    "id": "A-03",
+    "layer": "application",
+    "category": "invoice-upload",
+    "summary": "uploadInvoicesAction calls createIdempotentInvoice with two arguments while implementation accepts one and lacks idempotency storage, leading to runtime/type errors.",
+    "locations": [
+      "src/app/(dashboard)/invoices/actions.ts",
+      "src/lib/data.ts"
+    ],
+    "linkedEntities": [
+      "uploadInvoicesAction",
+      "createIdempotentInvoice"
+    ],
+    "status": "unresolved",
+    "source": "marfanet_audit_checklist.md"
+  },
+  {
+    "id": "A-04",
+    "layer": "application",
+    "category": "invoice-upload",
+    "summary": "uploadInvoicesAction sets agentName, items, source, batchJobId on invoice payload though Invoice type does not define them, causing compile/runtime mismatches.",
+    "locations": [
+      "src/app/(dashboard)/invoices/actions.ts"
+    ],
+    "linkedEntities": [
+      "uploadInvoicesAction",
+      "Invoice"
+    ],
+    "status": "unresolved",
+    "source": "marfanet_audit_checklist.md"
+  },
+  {
+    "id": "B-01",
+    "layer": "business",
+    "category": "wallet-settlement",
+    "summary": "WalletService.settleInvoices marks invoices as paid even when wallet balance is insufficient, so partial settlements result in inconsistent states.",
+    "locations": [
+      "src/lib/wallet-service.ts",
+      "src/lib/invoice-service.ts"
+    ],
+    "linkedEntities": [
+      "WalletService",
+      "InvoiceService"
+    ],
+    "status": "unresolved",
+    "source": "marfanet_audit_checklist.md"
+  },
+  {
+    "id": "B-02",
+    "layer": "business",
+    "category": "auditability",
+    "summary": "Invoice status history is stored in in-memory array invoiceStatusHistory within invoice-service.ts, so history is lost on restart and cannot support audit trail.",
+    "locations": [
+      "src/lib/invoice-service.ts"
+    ],
+    "linkedEntities": [
+      "InvoiceService",
+      "InvoiceStatusHistory"
+    ],
+    "status": "unresolved",
+    "source": "marfanet_audit_checklist.md"
+  },
+  {
+    "id": "B-03",
+    "layer": "business",
+    "category": "cron",
+    "summary": "Cron service references invoice.invoiceNumber in logs and notifications though schema lacks the field, producing incorrect messaging.",
+    "locations": [
+      "src/lib/cron-service.ts"
+    ],
+    "linkedEntities": [
+      "CronService",
+      "Invoice"
+    ],
+    "status": "unresolved",
+    "source": "marfanet_audit_checklist.md"
+  },
+  {
+    "id": "B-04",
+    "layer": "business",
+    "category": "payment-processing",
+    "summary": "PaymentService.processPaymentTransaction lacks atomic behavior between wallet deposit and invoice settlement; failures leave wallet debited without invoice updates.",
+    "locations": [
+      "src/lib/payment-service.ts",
+      "src/lib/wallet-service.ts"
+    ],
+    "linkedEntities": [
+      "PaymentService",
+      "WalletService"
+    ],
+    "status": "unresolved",
+    "source": "marfanet_audit_checklist.md"
+  },
+  {
+    "id": "D-01",
+    "layer": "domain",
+    "category": "types",
+    "summary": "AgentFinancialSummary type used in agents pages and tables is missing from types.ts, preventing type-safe builds.",
+    "locations": [
+      "src/lib/types.ts",
+      "src/lib/data.ts",
+      "src/app/(dashboard)/agents/_components/agent-table.tsx"
+    ],
+    "linkedEntities": [
+      "AgentFinancialSummary"
+    ],
+    "status": "unresolved",
+    "source": "marfanet_audit_checklist.md"
+  },
+  {
+    "id": "D-02",
+    "layer": "domain",
+    "category": "mock-data",
+    "summary": "Mock data in data.ts lacks fields required by UI (invoiceNumber, referenceNumber, agent contact details), causing divergence from schema and UI requirements.",
+    "locations": [
+      "src/lib/data.ts"
+    ],
+    "linkedEntities": [
+      "MockData",
+      "Invoice",
+      "Payment",
+      "Agent"
+    ],
+    "status": "unresolved",
+    "source": "marfanet_audit_checklist.md"
+  },
+  {
+    "id": "D-03",
+    "layer": "domain",
+    "category": "types",
+    "summary": "Domain types like SystemSetting, SettingsAuditLog, NotificationLog are missing from types.ts despite being used in services, depending on ignoreBuildErrors flag.",
+    "locations": [
+      "src/lib/types.ts",
+      "src/lib/settings-service.ts",
+      "src/lib/cron-service.ts"
+    ],
+    "linkedEntities": [
+      "SystemSetting",
+      "SettingsAuditLog",
+      "NotificationLog"
+    ],
+    "status": "unresolved",
+    "source": "marfanet_audit_checklist.md"
+  },
+  {
+    "id": "I-01",
+    "layer": "infrastructure",
+    "category": "idempotency",
+    "summary": "createIdempotentInvoice simply inserts new records without storing idempotency keys, so duplicate uploads aren\"t prevented.",
+    "locations": [
+      "src/lib/data.ts",
+      "src/lib/persistence/repositories/invoice-repository.ts"
+    ],
+    "linkedEntities": [
+      "createIdempotentInvoice"
+    ],
+    "status": "unresolved",
+    "source": "marfanet_audit_checklist.md"
+  },
+  {
+    "id": "I-02",
+    "layer": "infrastructure",
+    "category": "storage",
+    "summary": "All core datasets (agents, invoices, wallets, etc.) are held in in-memory arrays in data.ts so state is lost on restart and persistence scenarios can\"t be tested.",
+    "locations": [
+      "src/lib/data.ts"
+    ],
+    "linkedEntities": [
+      "MockDataStore"
+    ],
+    "status": "unresolved",
+    "source": "marfanet_audit_checklist.md"
+  },
+  {
+    "id": "I-03",
+    "layer": "infrastructure",
+    "category": "settings-security",
+    "summary": "Settings service stores sensitive values in plaintext without encryption, caching or access controls despite isSensitive flag.",
+    "locations": [
+      "src/lib/settings-service.ts"
+    ],
+    "linkedEntities": [
+      "SettingsService",
+      "SystemSetting"
+    ],
+    "status": "unresolved",
+    "source": "marfanet_audit_checklist.md"
+  },
+  {
+    "id": "I-04",
+    "layer": "infrastructure",
+    "category": "genkit-flow",
+    "summary": "Genkit flow for usage aggregation only accepts processedHashes input and lacks persistent storage, so duplicate data will be reprocessed in production.",
+    "locations": [
+      "src/ai/flows/validate-and-aggregate-usage-data.ts"
+    ],
+    "linkedEntities": [
+      "UsageAggregationFlow"
+    ],
+    "status": "unresolved",
+    "source": "marfanet_audit_checklist.md"
+  }
+]

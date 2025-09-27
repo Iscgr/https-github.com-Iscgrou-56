@@ -2,8 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useActionState } from 'react';
-import { useFormStatus } from 'react-dom';
+import { useFormState, useFormStatus } from 'react-dom';
 import {
   Dialog,
   DialogContent,
@@ -19,7 +18,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
-import { addOrUpdatePartner, type PartnerFormState } from '../actions';
+import { addOrUpdatePartner } from '../actions';
+import { type PartnerFormState } from '../types';
 import type { SalesPartner } from '@/lib/types';
 
 type Props = {
@@ -44,7 +44,7 @@ function SubmitButton({ isEditing }: { isEditing: boolean }) {
 
 export function PartnerFormDialog({ children, partner }: Props) {
   const [isOpen, setIsOpen] = useState(false);
-  const [state, formAction] = useActionState(addOrUpdatePartner, initialState);
+  const [state, formAction] = useFormState(addOrUpdatePartner, initialState);
   const { toast } = useToast();
   const isEditing = !!partner;
 

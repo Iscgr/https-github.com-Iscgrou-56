@@ -1,0 +1,753 @@
+{
+  "suite": "enhanced-playwright-suite",
+  "startedAt": "2025-09-27T16:06:46.699Z",
+  "finishedAt": "2025-09-27T16:08:08.142Z",
+  "durationMs": 81443,
+  "environment": {
+    "baseUrl": "http://localhost:9002",
+    "serverCommand": "npm run dev",
+    "readyEndpoint": "http://localhost:9002/api/internal/metrics",
+    "seedCommand": "npm run db:seed",
+    "startedAt": "2025-09-27T16:06:46.701Z",
+    "seedExecuted": true
+  },
+  "results": [
+    {
+      "module": "UI",
+      "test": "داشبورد - ناوبری",
+      "status": "FAIL",
+      "duration": 7123,
+      "error": "سایدبار یا ناوبری اصلی یافت نشد",
+      "details": {
+        "stack": "Error: سایدبار یا ناوبری اصلی یافت نشد\n    at <anonymous> (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:241:15)\n    at async EnhancedPlaywrightSuite.executeTest (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:125:22)\n    at async EnhancedPlaywrightSuite.testUIComponents (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:233:5)\n    at async <anonymous> (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:611:11)\n    at async TestEnvironmentManager.withEnvironment (/workspaces/https-github.com-Iscgrou-56/scripts/testing/orchestrator.ts:205:14)\n    at async EnhancedPlaywrightSuite.runAllTests (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:602:7)"
+      },
+      "screenshots": [],
+      "console": [
+        {
+          "severity": "INFO",
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_compiled_2ce9398a._.js:16383:53",
+          "page": "UI-داشبورد - ناوبری",
+          "timestamp": "2025-09-27T16:06:58.395Z"
+        },
+        {
+          "severity": "WARNING",
+          "type": "warning",
+          "text": "The width(866) and height(350) are both fixed numbers,\n       maybe you don't need to use a ResponsiveContainer.",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_recharts_es6_8235043b._.js:2404:24",
+          "page": "UI-داشبورد - ناوبری",
+          "timestamp": "2025-09-27T16:06:58.567Z"
+        },
+        {
+          "severity": "WARNING",
+          "type": "warning",
+          "text": "The width(866) and height(350) are both fixed numbers,\n       maybe you don't need to use a ResponsiveContainer.",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_recharts_es6_8235043b._.js:2404:24",
+          "page": "UI-داشبورد - ناوبری",
+          "timestamp": "2025-09-27T16:06:58.567Z"
+        },
+        {
+          "severity": "INFO",
+          "type": "log",
+          "text": "[Fast Refresh] rebuilding",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:14983:16",
+          "page": "UI-داشبورد - ناوبری",
+          "timestamp": "2025-09-27T16:06:58.759Z"
+        },
+        {
+          "severity": "INFO",
+          "type": "log",
+          "text": "[Fast Refresh] done in 173ms",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:14847:12",
+          "page": "UI-داشبورد - ناوبری",
+          "timestamp": "2025-09-27T16:06:58.833Z"
+        }
+      ]
+    },
+    {
+      "module": "UI",
+      "test": "پروفایل نماینده",
+      "status": "FAIL",
+      "duration": 4380,
+      "error": "هیچ تب فعالی در صفحه پروفایل نماینده وجود ندارد",
+      "details": {
+        "stack": "Error: هیچ تب فعالی در صفحه پروفایل نماینده وجود ندارد\n    at <anonymous> (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:287:15)\n    at async EnhancedPlaywrightSuite.executeTest (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:125:22)\n    at async EnhancedPlaywrightSuite.testUIComponents (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:261:5)\n    at async <anonymous> (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:611:11)\n    at async TestEnvironmentManager.withEnvironment (/workspaces/https-github.com-Iscgrou-56/scripts/testing/orchestrator.ts:205:14)\n    at async EnhancedPlaywrightSuite.runAllTests (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:602:7)"
+      },
+      "screenshots": [],
+      "console": [
+        {
+          "severity": "INFO",
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_compiled_2ce9398a._.js:16383:53",
+          "page": "UI-پروفایل نماینده",
+          "timestamp": "2025-09-27T16:07:02.903Z"
+        }
+      ]
+    },
+    {
+      "module": "UI",
+      "test": "فرم پرداخت",
+      "status": "FAIL",
+      "duration": 3581,
+      "error": "path: unsupported mime type \"null\"",
+      "details": {
+        "stack": "Error: path: unsupported mime type \"null\"\n    at determineScreenshotType (/workspaces/https-github.com-Iscgrou-56/node_modules/playwright-core/lib/client/elementHandle.js:271:11)\n    at Page.screenshot (/workspaces/https-github.com-Iscgrou-56/node_modules/playwright-core/lib/client/page.js:466:68)\n    at <anonymous> (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:332:18)\n    at async EnhancedPlaywrightSuite.executeTest (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:125:22)\n    at async EnhancedPlaywrightSuite.testUIComponents (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:299:5)\n    at async <anonymous> (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:611:11)\n    at async TestEnvironmentManager.withEnvironment (/workspaces/https-github.com-Iscgrou-56/scripts/testing/orchestrator.ts:205:14)\n    at async EnhancedPlaywrightSuite.runAllTests (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:602:7)"
+      },
+      "screenshots": [],
+      "console": [
+        {
+          "severity": "INFO",
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_compiled_2ce9398a._.js:16383:53",
+          "page": "UI-فرم پرداخت",
+          "timestamp": "2025-09-27T16:07:06.199Z"
+        },
+        {
+          "severity": "CRITICAL",
+          "type": "error",
+          "text": "ReactDOM.useFormState has been renamed to React.useActionState. Please update %s to use React.useActionState. PaymentFormDialog",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:1225:31",
+          "page": "UI-فرم پرداخت",
+          "timestamp": "2025-09-27T16:07:06.302Z"
+        },
+        {
+          "severity": "INFO",
+          "type": "log",
+          "text": "[Fast Refresh] rebuilding",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:14983:16",
+          "page": "UI-فرم پرداخت",
+          "timestamp": "2025-09-27T16:07:06.523Z"
+        },
+        {
+          "severity": "INFO",
+          "type": "log",
+          "text": "[Fast Refresh] done in 194ms",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:14847:12",
+          "page": "UI-فرم پرداخت",
+          "timestamp": "2025-09-27T16:07:06.610Z"
+        }
+      ]
+    },
+    {
+      "module": "UserScenario",
+      "test": "افزودن پرداخت جدید",
+      "status": "FAIL",
+      "duration": 1277,
+      "error": "path: unsupported mime type \"null\"",
+      "details": {
+        "stack": "Error: path: unsupported mime type \"null\"\n    at determineScreenshotType (/workspaces/https-github.com-Iscgrou-56/node_modules/playwright-core/lib/client/elementHandle.js:271:11)\n    at Page.screenshot (/workspaces/https-github.com-Iscgrou-56/node_modules/playwright-core/lib/client/page.js:466:68)\n    at <anonymous> (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:392:18)\n    at async EnhancedPlaywrightSuite.executeTest (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:125:22)\n    at async EnhancedPlaywrightSuite.testUserScenarios (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:342:5)\n    at async <anonymous> (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:614:11)\n    at async TestEnvironmentManager.withEnvironment (/workspaces/https-github.com-Iscgrou-56/scripts/testing/orchestrator.ts:205:14)\n    at async EnhancedPlaywrightSuite.runAllTests (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:602:7)"
+      },
+      "screenshots": [],
+      "console": [
+        {
+          "severity": "INFO",
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_compiled_2ce9398a._.js:16383:53",
+          "page": "UserScenario-افزودن پرداخت جدید",
+          "timestamp": "2025-09-27T16:07:07.551Z"
+        },
+        {
+          "severity": "CRITICAL",
+          "type": "error",
+          "text": "ReactDOM.useFormState has been renamed to React.useActionState. Please update %s to use React.useActionState. PaymentFormDialog",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:1225:31",
+          "page": "UserScenario-افزودن پرداخت جدید",
+          "timestamp": "2025-09-27T16:07:07.654Z"
+        },
+        {
+          "severity": "INFO",
+          "type": "log",
+          "text": "[Fast Refresh] done in NaNms",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:14847:12",
+          "page": "UserScenario-افزودن پرداخت جدید",
+          "timestamp": "2025-09-27T16:07:07.768Z"
+        }
+      ]
+    },
+    {
+      "module": "UserScenario",
+      "test": "مشاهده گزارش‌ها",
+      "status": "FAIL",
+      "duration": 2739,
+      "error": "path: unsupported mime type \"null\"",
+      "details": {
+        "stack": "Error: path: unsupported mime type \"null\"\n    at determineScreenshotType (/workspaces/https-github.com-Iscgrou-56/node_modules/playwright-core/lib/client/elementHandle.js:271:11)\n    at Page.screenshot (/workspaces/https-github.com-Iscgrou-56/node_modules/playwright-core/lib/client/page.js:466:68)\n    at <anonymous> (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:420:18)\n    at async EnhancedPlaywrightSuite.executeTest (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:125:22)\n    at async EnhancedPlaywrightSuite.testUserScenarios (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:404:5)\n    at async <anonymous> (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:614:11)\n    at async TestEnvironmentManager.withEnvironment (/workspaces/https-github.com-Iscgrou-56/scripts/testing/orchestrator.ts:205:14)\n    at async EnhancedPlaywrightSuite.runAllTests (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:602:7)"
+      },
+      "screenshots": [],
+      "console": [
+        {
+          "severity": "INFO",
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_compiled_2ce9398a._.js:16383:53",
+          "page": "UserScenario-مشاهده گزارش‌ها",
+          "timestamp": "2025-09-27T16:07:10.518Z"
+        }
+      ]
+    },
+    {
+      "module": "Hydration",
+      "test": "Hydration dashboard",
+      "status": "FAIL",
+      "duration": 3241,
+      "error": "path: unsupported mime type \"null\"",
+      "details": {
+        "stack": "Error: path: unsupported mime type \"null\"\n    at determineScreenshotType (/workspaces/https-github.com-Iscgrou-56/node_modules/playwright-core/lib/client/elementHandle.js:271:11)\n    at Page.screenshot (/workspaces/https-github.com-Iscgrou-56/node_modules/playwright-core/lib/client/page.js:466:68)\n    at <anonymous> (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:444:20)\n    at async EnhancedPlaywrightSuite.executeTest (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:125:22)\n    at async EnhancedPlaywrightSuite.testHydrationIssues (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:439:7)\n    at async <anonymous> (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:617:11)\n    at async TestEnvironmentManager.withEnvironment (/workspaces/https-github.com-Iscgrou-56/scripts/testing/orchestrator.ts:205:14)\n    at async EnhancedPlaywrightSuite.runAllTests (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:602:7)"
+      },
+      "screenshots": [],
+      "console": [
+        {
+          "severity": "INFO",
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_compiled_2ce9398a._.js:16383:53",
+          "page": "Hydration-Hydration dashboard",
+          "timestamp": "2025-09-27T16:07:11.656Z"
+        },
+        {
+          "severity": "WARNING",
+          "type": "warning",
+          "text": "The width(866) and height(350) are both fixed numbers,\n       maybe you don't need to use a ResponsiveContainer.",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_recharts_es6_8235043b._.js:2404:24",
+          "page": "Hydration-Hydration dashboard",
+          "timestamp": "2025-09-27T16:07:11.816Z"
+        },
+        {
+          "severity": "WARNING",
+          "type": "warning",
+          "text": "The width(866) and height(350) are both fixed numbers,\n       maybe you don't need to use a ResponsiveContainer.",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_recharts_es6_8235043b._.js:2404:24",
+          "page": "Hydration-Hydration dashboard",
+          "timestamp": "2025-09-27T16:07:11.816Z"
+        }
+      ]
+    },
+    {
+      "module": "Hydration",
+      "test": "Hydration agents",
+      "status": "FAIL",
+      "duration": 5797,
+      "error": "path: unsupported mime type \"null\"",
+      "details": {
+        "stack": "Error: path: unsupported mime type \"null\"\n    at determineScreenshotType (/workspaces/https-github.com-Iscgrou-56/node_modules/playwright-core/lib/client/elementHandle.js:271:11)\n    at Page.screenshot (/workspaces/https-github.com-Iscgrou-56/node_modules/playwright-core/lib/client/page.js:466:68)\n    at <anonymous> (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:444:20)\n    at async EnhancedPlaywrightSuite.executeTest (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:125:22)\n    at async EnhancedPlaywrightSuite.testHydrationIssues (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:439:7)\n    at async <anonymous> (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:617:11)\n    at async TestEnvironmentManager.withEnvironment (/workspaces/https-github.com-Iscgrou-56/scripts/testing/orchestrator.ts:205:14)\n    at async EnhancedPlaywrightSuite.runAllTests (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:602:7)"
+      },
+      "screenshots": [],
+      "console": [
+        {
+          "severity": "INFO",
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_compiled_2ce9398a._.js:16383:53",
+          "page": "Hydration-Hydration agents",
+          "timestamp": "2025-09-27T16:07:16.895Z"
+        },
+        {
+          "severity": "CRITICAL",
+          "type": "error",
+          "text": "ReactDOM.useFormState has been renamed to React.useActionState. Please update %s to use React.useActionState. AgentFormDialog",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:1225:31",
+          "page": "Hydration-Hydration agents",
+          "timestamp": "2025-09-27T16:07:16.996Z"
+        },
+        {
+          "severity": "INFO",
+          "type": "log",
+          "text": "[Fast Refresh] done in NaNms",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:14847:12",
+          "page": "Hydration-Hydration agents",
+          "timestamp": "2025-09-27T16:07:17.796Z"
+        }
+      ]
+    },
+    {
+      "module": "Hydration",
+      "test": "Hydration partners",
+      "status": "FAIL",
+      "duration": 5071,
+      "error": "path: unsupported mime type \"null\"",
+      "details": {
+        "stack": "Error: path: unsupported mime type \"null\"\n    at determineScreenshotType (/workspaces/https-github.com-Iscgrou-56/node_modules/playwright-core/lib/client/elementHandle.js:271:11)\n    at Page.screenshot (/workspaces/https-github.com-Iscgrou-56/node_modules/playwright-core/lib/client/page.js:466:68)\n    at <anonymous> (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:444:20)\n    at async EnhancedPlaywrightSuite.executeTest (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:125:22)\n    at async EnhancedPlaywrightSuite.testHydrationIssues (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:439:7)\n    at async <anonymous> (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:617:11)\n    at async TestEnvironmentManager.withEnvironment (/workspaces/https-github.com-Iscgrou-56/scripts/testing/orchestrator.ts:205:14)\n    at async EnhancedPlaywrightSuite.runAllTests (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:602:7)"
+      },
+      "screenshots": [],
+      "console": [
+        {
+          "severity": "INFO",
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_compiled_2ce9398a._.js:16383:53",
+          "page": "Hydration-Hydration partners",
+          "timestamp": "2025-09-27T16:07:22.662Z"
+        }
+      ]
+    },
+    {
+      "module": "Hydration",
+      "test": "Hydration payments",
+      "status": "FAIL",
+      "duration": 3426,
+      "error": "path: unsupported mime type \"null\"",
+      "details": {
+        "stack": "Error: path: unsupported mime type \"null\"\n    at determineScreenshotType (/workspaces/https-github.com-Iscgrou-56/node_modules/playwright-core/lib/client/elementHandle.js:271:11)\n    at Page.screenshot (/workspaces/https-github.com-Iscgrou-56/node_modules/playwright-core/lib/client/page.js:466:68)\n    at <anonymous> (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:444:20)\n    at async EnhancedPlaywrightSuite.executeTest (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:125:22)\n    at async EnhancedPlaywrightSuite.testHydrationIssues (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:439:7)\n    at async <anonymous> (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:617:11)\n    at async TestEnvironmentManager.withEnvironment (/workspaces/https-github.com-Iscgrou-56/scripts/testing/orchestrator.ts:205:14)\n    at async EnhancedPlaywrightSuite.runAllTests (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:602:7)"
+      },
+      "screenshots": [],
+      "console": [
+        {
+          "severity": "INFO",
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_compiled_2ce9398a._.js:16383:53",
+          "page": "Hydration-Hydration payments",
+          "timestamp": "2025-09-27T16:07:25.999Z"
+        },
+        {
+          "severity": "CRITICAL",
+          "type": "error",
+          "text": "ReactDOM.useFormState has been renamed to React.useActionState. Please update %s to use React.useActionState. PaymentFormDialog",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:1225:31",
+          "page": "Hydration-Hydration payments",
+          "timestamp": "2025-09-27T16:07:26.118Z"
+        },
+        {
+          "severity": "INFO",
+          "type": "log",
+          "text": "[Fast Refresh] done in NaNms",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:14847:12",
+          "page": "Hydration-Hydration payments",
+          "timestamp": "2025-09-27T16:07:26.260Z"
+        }
+      ]
+    },
+    {
+      "module": "Hydration",
+      "test": "Hydration settings",
+      "status": "FAIL",
+      "duration": 8932,
+      "error": "path: unsupported mime type \"null\"",
+      "details": {
+        "stack": "Error: path: unsupported mime type \"null\"\n    at determineScreenshotType (/workspaces/https-github.com-Iscgrou-56/node_modules/playwright-core/lib/client/elementHandle.js:271:11)\n    at Page.screenshot (/workspaces/https-github.com-Iscgrou-56/node_modules/playwright-core/lib/client/page.js:466:68)\n    at <anonymous> (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:444:20)\n    at async EnhancedPlaywrightSuite.executeTest (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:125:22)\n    at async EnhancedPlaywrightSuite.testHydrationIssues (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:439:7)\n    at async <anonymous> (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:617:11)\n    at async TestEnvironmentManager.withEnvironment (/workspaces/https-github.com-Iscgrou-56/scripts/testing/orchestrator.ts:205:14)\n    at async EnhancedPlaywrightSuite.runAllTests (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-comprehensive-test.ts:602:7)"
+      },
+      "screenshots": [],
+      "console": [
+        {
+          "severity": "INFO",
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_compiled_2ce9398a._.js:16383:53",
+          "page": "Hydration-Hydration settings",
+          "timestamp": "2025-09-27T16:07:34.950Z"
+        },
+        {
+          "severity": "CRITICAL",
+          "type": "error",
+          "text": "ReactDOM.useFormState has been renamed to React.useActionState. Please update %s to use React.useActionState. SettingsForm",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:1225:31",
+          "page": "Hydration-Hydration settings",
+          "timestamp": "2025-09-27T16:07:35.049Z"
+        },
+        {
+          "severity": "INFO",
+          "type": "log",
+          "text": "[Fast Refresh] rebuilding",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:14983:16",
+          "page": "Hydration-Hydration settings",
+          "timestamp": "2025-09-27T16:07:35.234Z"
+        },
+        {
+          "severity": "INFO",
+          "type": "log",
+          "text": "[Fast Refresh] done in 161ms",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:14847:12",
+          "page": "Hydration-Hydration settings",
+          "timestamp": "2025-09-27T16:07:35.296Z"
+        }
+      ]
+    },
+    {
+      "module": "Console",
+      "test": "Console dashboard",
+      "status": "PASS",
+      "duration": 4316,
+      "details": {
+        "url": "/",
+        "errorCount": 0,
+        "warningCount": 2,
+        "errors": [],
+        "warnings": [
+          "The width(866) and height(350) are both fixed numbers,\n       maybe you don't need to use a ResponsiveContainer.",
+          "The width(866) and height(350) are both fixed numbers,\n       maybe you don't need to use a ResponsiveContainer."
+        ]
+      },
+      "screenshots": [],
+      "console": [
+        {
+          "severity": "INFO",
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_compiled_2ce9398a._.js:16383:53",
+          "page": "Console-Console dashboard",
+          "timestamp": "2025-09-27T16:07:38.269Z"
+        },
+        {
+          "severity": "WARNING",
+          "type": "warning",
+          "text": "The width(866) and height(350) are both fixed numbers,\n       maybe you don't need to use a ResponsiveContainer.",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_recharts_es6_8235043b._.js:2404:24",
+          "page": "Console-Console dashboard",
+          "timestamp": "2025-09-27T16:07:38.448Z"
+        },
+        {
+          "severity": "WARNING",
+          "type": "warning",
+          "text": "The width(866) and height(350) are both fixed numbers,\n       maybe you don't need to use a ResponsiveContainer.",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_recharts_es6_8235043b._.js:2404:24",
+          "page": "Console-Console dashboard",
+          "timestamp": "2025-09-27T16:07:38.448Z"
+        },
+        {
+          "severity": "INFO",
+          "type": "log",
+          "text": "[Fast Refresh] done in NaNms",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:14847:12",
+          "page": "Console-Console dashboard",
+          "timestamp": "2025-09-27T16:07:38.525Z"
+        }
+      ]
+    },
+    {
+      "module": "Console",
+      "test": "Console agents",
+      "status": "FAIL",
+      "duration": 4454,
+      "error": "Critical console errors detected",
+      "details": {
+        "url": "/agents",
+        "errorCount": 1,
+        "warningCount": 0,
+        "errors": [
+          "ReactDOM.useFormState has been renamed to React.useActionState. Please update %s to use React.useActionState. AgentFormDialog"
+        ],
+        "warnings": []
+      },
+      "screenshots": [],
+      "console": [
+        {
+          "severity": "INFO",
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_compiled_2ce9398a._.js:16383:53",
+          "page": "Console-Console agents",
+          "timestamp": "2025-09-27T16:07:42.713Z"
+        },
+        {
+          "severity": "CRITICAL",
+          "type": "error",
+          "text": "ReactDOM.useFormState has been renamed to React.useActionState. Please update %s to use React.useActionState. AgentFormDialog",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:1225:31",
+          "page": "Console-Console agents",
+          "timestamp": "2025-09-27T16:07:42.815Z"
+        },
+        {
+          "severity": "INFO",
+          "type": "log",
+          "text": "[Fast Refresh] done in NaNms",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:14847:12",
+          "page": "Console-Console agents",
+          "timestamp": "2025-09-27T16:07:42.997Z"
+        }
+      ]
+    },
+    {
+      "module": "Console",
+      "test": "Console partners",
+      "status": "PASS",
+      "duration": 4291,
+      "details": {
+        "url": "/partners",
+        "errorCount": 0,
+        "warningCount": 0,
+        "errors": [],
+        "warnings": []
+      },
+      "screenshots": [],
+      "console": [
+        {
+          "severity": "INFO",
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_compiled_2ce9398a._.js:16383:53",
+          "page": "Console-Console partners",
+          "timestamp": "2025-09-27T16:07:47.105Z"
+        }
+      ]
+    },
+    {
+      "module": "Console",
+      "test": "Console payments",
+      "status": "FAIL",
+      "duration": 4352,
+      "error": "Critical console errors detected",
+      "details": {
+        "url": "/payments",
+        "errorCount": 1,
+        "warningCount": 0,
+        "errors": [
+          "ReactDOM.useFormState has been renamed to React.useActionState. Please update %s to use React.useActionState. PaymentFormDialog"
+        ],
+        "warnings": []
+      },
+      "screenshots": [],
+      "console": [
+        {
+          "severity": "INFO",
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_compiled_2ce9398a._.js:16383:53",
+          "page": "Console-Console payments",
+          "timestamp": "2025-09-27T16:07:51.427Z"
+        },
+        {
+          "severity": "CRITICAL",
+          "type": "error",
+          "text": "ReactDOM.useFormState has been renamed to React.useActionState. Please update %s to use React.useActionState. PaymentFormDialog",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:1225:31",
+          "page": "Console-Console payments",
+          "timestamp": "2025-09-27T16:07:51.522Z"
+        }
+      ]
+    },
+    {
+      "module": "Console",
+      "test": "Console invoices",
+      "status": "PASS",
+      "duration": 6045,
+      "details": {
+        "url": "/invoices",
+        "errorCount": 0,
+        "warningCount": 0,
+        "errors": [],
+        "warnings": []
+      },
+      "screenshots": [],
+      "console": [
+        {
+          "severity": "INFO",
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_compiled_2ce9398a._.js:16383:53",
+          "page": "Console-Console invoices",
+          "timestamp": "2025-09-27T16:07:57.494Z"
+        },
+        {
+          "severity": "INFO",
+          "type": "log",
+          "text": "[Fast Refresh] rebuilding",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:14983:16",
+          "page": "Console-Console invoices",
+          "timestamp": "2025-09-27T16:07:57.804Z"
+        },
+        {
+          "severity": "INFO",
+          "type": "log",
+          "text": "[Fast Refresh] done in 179ms",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:14847:12",
+          "page": "Console-Console invoices",
+          "timestamp": "2025-09-27T16:07:57.883Z"
+        }
+      ]
+    },
+    {
+      "module": "Console",
+      "test": "Console settings",
+      "status": "FAIL",
+      "duration": 4292,
+      "error": "Critical console errors detected",
+      "details": {
+        "url": "/settings",
+        "errorCount": 1,
+        "warningCount": 0,
+        "errors": [
+          "ReactDOM.useFormState has been renamed to React.useActionState. Please update %s to use React.useActionState. SettingsForm"
+        ],
+        "warnings": []
+      },
+      "screenshots": [],
+      "console": [
+        {
+          "severity": "INFO",
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_compiled_2ce9398a._.js:16383:53",
+          "page": "Console-Console settings",
+          "timestamp": "2025-09-27T16:08:01.820Z"
+        },
+        {
+          "severity": "CRITICAL",
+          "type": "error",
+          "text": "ReactDOM.useFormState has been renamed to React.useActionState. Please update %s to use React.useActionState. SettingsForm",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:1225:31",
+          "page": "Console-Console settings",
+          "timestamp": "2025-09-27T16:08:01.911Z"
+        },
+        {
+          "severity": "INFO",
+          "type": "log",
+          "text": "[Fast Refresh] rebuilding",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:14983:16",
+          "page": "Console-Console settings",
+          "timestamp": "2025-09-27T16:08:02.080Z"
+        },
+        {
+          "severity": "INFO",
+          "type": "log",
+          "text": "[Fast Refresh] done in 117ms",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:14847:12",
+          "page": "Console-Console settings",
+          "timestamp": "2025-09-27T16:08:02.096Z"
+        }
+      ]
+    },
+    {
+      "module": "API",
+      "test": "Endpoint /api/agents",
+      "status": "PASS",
+      "duration": 132,
+      "details": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "dataType": "object",
+        "isArray": true
+      },
+      "screenshots": [],
+      "console": []
+    },
+    {
+      "module": "API",
+      "test": "Endpoint /api/invoices",
+      "status": "PASS",
+      "duration": 852,
+      "details": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "dataType": "object",
+        "isArray": true
+      },
+      "screenshots": [],
+      "console": []
+    },
+    {
+      "module": "API",
+      "test": "Endpoint /api/payments",
+      "status": "PASS",
+      "duration": 712,
+      "details": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "dataType": "object",
+        "isArray": true
+      },
+      "screenshots": [],
+      "console": []
+    },
+    {
+      "module": "API",
+      "test": "Endpoint /api/sales-partners",
+      "status": "PASS",
+      "duration": 53,
+      "details": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "dataType": "object",
+        "isArray": true
+      },
+      "screenshots": [],
+      "console": []
+    },
+    {
+      "module": "API",
+      "test": "Endpoint /api/agent-summaries",
+      "status": "PASS",
+      "duration": 710,
+      "details": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "dataType": "object",
+        "isArray": true
+      },
+      "screenshots": [],
+      "console": []
+    },
+    {
+      "module": "API",
+      "test": "Endpoint /api/internal/metrics",
+      "status": "PASS",
+      "duration": 61,
+      "details": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain; version=0.0.4; charset=utf-8",
+        "dataType": "string",
+        "isArray": false,
+        "responseSample": "# HELP process_cpu_user_seconds_total Total user CPU time spent in seconds.\n# TYPE process_cpu_user_seconds_total counter\nprocess_cpu_user_seconds_total 86.90122099999999\n\n# HELP process_cpu_system_se"
+      },
+      "screenshots": [],
+      "console": []
+    }
+  ],
+  "metadata": {
+    "totalConsoleLogs": 45,
+    "consoleBreakdown": {
+      "critical": 8,
+      "warning": 6,
+      "info": 31
+    },
+    "moduleStats": {
+      "UI": {
+        "total": 3,
+        "passed": 0,
+        "failed": 3
+      },
+      "UserScenario": {
+        "total": 2,
+        "passed": 0,
+        "failed": 2
+      },
+      "Hydration": {
+        "total": 5,
+        "passed": 0,
+        "failed": 5
+      },
+      "Console": {
+        "total": 6,
+        "passed": 3,
+        "failed": 3
+      },
+      "API": {
+        "total": 6,
+        "passed": 6,
+        "failed": 0
+      }
+    },
+    "suiteSettings": {
+      "timeout": 20000,
+      "retryCount": 2,
+      "logLevel": "INFO",
+      "launchArgs": [
+        "--no-sandbox",
+        "--disable-setuid-sandbox"
+      ],
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      }
+    }
+  }
+}

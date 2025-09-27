@@ -1,0 +1,42 @@
+[
+  {
+    "severity": "INFO",
+    "type": "info",
+    "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+    "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_compiled_2ce9398a._.js:16383:53",
+    "page": "UI-داشبورد - ناوبری",
+    "timestamp": "2025-09-27T16:06:58.395Z"
+  },
+  {
+    "severity": "WARNING",
+    "type": "warning",
+    "text": "The width(866) and height(350) are both fixed numbers,\n       maybe you don't need to use a ResponsiveContainer.",
+    "location": "http://localhost:9002/_next/static/chunks/node_modules_recharts_es6_8235043b._.js:2404:24",
+    "page": "UI-داشبورد - ناوبری",
+    "timestamp": "2025-09-27T16:06:58.567Z"
+  },
+  {
+    "severity": "WARNING",
+    "type": "warning",
+    "text": "The width(866) and height(350) are both fixed numbers,\n       maybe you don't need to use a ResponsiveContainer.",
+    "location": "http://localhost:9002/_next/static/chunks/node_modules_recharts_es6_8235043b._.js:2404:24",
+    "page": "UI-داشبورد - ناوبری",
+    "timestamp": "2025-09-27T16:06:58.567Z"
+  },
+  {
+    "severity": "INFO",
+    "type": "log",
+    "text": "[Fast Refresh] rebuilding",
+    "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:14983:16",
+    "page": "UI-داشبورد - ناوبری",
+    "timestamp": "2025-09-27T16:06:58.759Z"
+  },
+  {
+    "severity": "INFO",
+    "type": "log",
+    "text": "[Fast Refresh] done in 173ms",
+    "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:14847:12",
+    "page": "UI-داشبورد - ناوبری",
+    "timestamp": "2025-09-27T16:06:58.833Z"
+  }
+]

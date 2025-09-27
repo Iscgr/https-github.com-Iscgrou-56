@@ -1,6 +1,4 @@
-
-import { WalletService } from './wallet-service';
-import { getRequiredAuditActor } from './audit-context';
+import { FinancialOrchestrator } from './financial-orchestrator';
 
 /**
  * Encapsulates the pure business logic for processing a payment transaction.
@@ -12,25 +10,30 @@ import { getRequiredAuditActor } from './audit-context';
  */
 async function processPaymentTransaction(
     agentId: string,
-    amount: number
-): Promise<{ success: boolean; message: string }> {
-    // The audit actor is retrieved from the context, ensuring traceability.
-    const actor = getRequiredAuditActor();
-    console.log(`[PaymentService] Processing payment for agent ${agentId} from actor ${actor.userId}`);
+    amount: number,
+    options?: { referenceId?: string; note?: string; settleBatchSize?: number },
+): Promise<{ success: boolean; message: string; referenceId?: string; paymentId?: string }> {
+    const result = await FinancialOrchestrator.processPayment({
+        agentId,
+        amount,
+        referenceId: options?.referenceId,
+        note: options?.note ?? null,
+        settleBatchSize: options?.settleBatchSize,
+    });
 
-    try {
-        // 1. Deposit the new funds into the agent's wallet.
-        await WalletService.deposit(agentId, amount, `payment_ref_${Date.now()}`);
-
-        // 2. Attempt to settle any outstanding invoices with the new balance.
-        await WalletService.settleInvoices(agentId);
-
-        return { success: true, message: "Payment processed and settled successfully." };
-
-    } catch (error: any) {
-        console.error(`[PaymentService] Error during payment processing for agent ${agentId}:`, error);
-        return { success: false, message: error.message };
+    if (result.success) {
+        return {
+            success: true,
+            message: 'Payment processed and settled successfully.',
+            referenceId: result.referenceId,
+            paymentId: result.paymentId,
+        };
     }
+
+    return {
+        success: false,
+        message: result.message,
+    };
 }
 
 export const PaymentService = {

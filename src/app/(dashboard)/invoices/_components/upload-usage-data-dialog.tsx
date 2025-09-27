@@ -18,7 +18,7 @@ import { uploadInvoicesAction } from '../actions';
 import { FileUp, Loader2 } from 'lucide-react';
 
 // This is a mock parser for demo purposes. In a real app, you'd use a library like SheetJS or PapaParse.
-const mockParseFile = (file: File): Promise<any[]> => {
+const mockParseFile = (file: File): Promise<unknown[]> => {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = (event) => {
@@ -30,8 +30,8 @@ const mockParseFile = (file: File): Promise<any[]> => {
                     throw new Error("File content must be a JSON array.");
                 }
                 resolve(data);
-            } catch (error) {
-                reject(error);
+      } catch (error) {
+        reject(error);
             }
         };
         reader.onerror = (error) => reject(error);
@@ -80,11 +80,12 @@ export function UploadUsageDataDialog() {
         } else {
           throw new Error(result.message);
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : JSON.stringify(error);
         toast({
           variant: 'destructive',
           title: 'پردازش فایل با خطا مواجه شد',
-          description: `جزئیات خطا: ${error.message}`,
+          description: `جزئیات خطا: ${errorMessage}`,
         });
       }
     });

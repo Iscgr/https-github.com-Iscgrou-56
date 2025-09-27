@@ -1,0 +1,40 @@
+groups:
+  - name: marfanet-prisma-rollout
+    interval: 30s
+    rules:
+      - alert: FinancialOrchestratorRollbackSpike
+        expr: increase(financial_orchestrator_rollbacks_total[10m]) > 3
+        for: 5m
+        labels:
+          severity: critical
+          service: marfanet
+        annotations:
+          summary: "Financial orchestrator rollback spike"
+          description: "More than three rollbacks observed in the last 10 minutes. Investigate settlements and consider disabling the FINANCIAL_ORCHESTRATOR flag."
+      - alert: PortalLatencyDegradation
+        expr: histogram_quantile(0.95, sum by (le)(rate(portal_response_duration_seconds_bucket[10m]))) > 0.2
+        for: 10m
+        labels:
+          severity: warning
+          service: marfanet
+        annotations:
+          summary: "Portal latency exceeds 200ms p95"
+          description: "Portal response time p95 has exceeded 200ms for 10 minutes. Review recent deployments or disable PORTAL_PRISMA flag for affected cohorts."
+      - alert: SettingsUpdateFailure
+        expr: increase(settings_updates_total{result="failure"}[30m]) > 0
+        for: 1m
+        labels:
+          severity: warning
+          service: marfanet
+        annotations:
+          summary: "Settings update failed"
+          description: "A secure settings update failed within the last 30 minutes. Verify Vault/KMS availability and audit logs."
+      - alert: OrchestratorSignalMissing
+        expr: absent(financial_orchestrator_payments_total[5m])
+        for: 5m
+        labels:
+          severity: info
+          service: marfanet
+        annotations:
+          summary: "No orchestrator events detected"
+          description: "No payment attempts observed for 5 minutes. Ensure the metrics endpoint is healthy and traffic is flowing."

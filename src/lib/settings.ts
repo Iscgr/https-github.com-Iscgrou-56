@@ -28,7 +28,7 @@ export async function getTelegramSettings(): Promise<TelegramSettings> {
       chatId: settingsFromFile.chatId || '',
       messageTemplate: settingsFromFile.messageTemplate || '',
     };
-  } catch (error) {
+  } catch {
     // If the file doesn't exist or is invalid, return default values
     return {
       botToken,

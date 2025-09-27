@@ -2,10 +2,13 @@
 
 import { CommissionService } from "@/lib/commission-service";
 import { getSalesPartners } from "@/lib/data";
+import { partnerFormSchema, type PartnerFormState } from "./types";
 
 // In a real app, you would fetch reports from your database.
 // We will use the service to get the data structure.
-let mockReportsStore: any[] = [];
+type CommissionReportWithDetails = Awaited<ReturnType<typeof CommissionService.calculateCommission>>;
+
+const mockReportsStore: CommissionReportWithDetails[] = [];
 
 export async function calculateCommissionAction(partnerId: string, startDate: string, endDate: string) {
     console.log(`[Action] Received request to calculate commission for partner ${partnerId}`);
@@ -22,8 +25,9 @@ export async function calculateCommissionAction(partnerId: string, startDate: st
         mockReportsStore.push(report);
 
         return { success: true, message: "Commission calculated successfully.", data: report };
-    } catch (error: any) {
-        return { success: false, message: error.message };
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : JSON.stringify(error);
+    return { success: false, message: errorMessage };
     }
 }
 
@@ -35,7 +39,7 @@ export async function exportReportDetailsAsCsvAction(reportId: string): Promise<
     console.log(`[Action] Request to export details for report ${reportId}`);
     try {
         // Find the report in our mock data store
-        const report = mockReportsStore.find(r => r.id === reportId);
+    const report = mockReportsStore.find(r => r.id === reportId);
         if (!report || !report.calculationDetails) {
             throw new Error("Report not found or has no details.");
         }
@@ -50,7 +54,43 @@ export async function exportReportDetailsAsCsvAction(reportId: string): Promise<
 
         return { success: true, csvContent, message: "Export data generated successfully." };
 
-    } catch (error: any) {
-        return { success: false, message: error.message };
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : JSON.stringify(error);
+    return { success: false, message: errorMessage };
     }
+}
+
+export async function addOrUpdatePartner(
+  prevState: PartnerFormState,
+  formData: FormData
+): Promise<PartnerFormState> {
+  try {
+    const validatedFields = partnerFormSchema.safeParse({
+      id: formData.get("id"),
+      name: formData.get("name"),
+      email: formData.get("email"),
+      commissionRate: formData.get("commissionRate"),
+      active: formData.get("active") === "on",
+    });
+
+    if (!validatedFields.success) {
+      return {
+        errors: validatedFields.error.flatten().fieldErrors,
+        message: "فیلدهای ورودی را بررسی کنید",
+      };
+    }
+
+  const { id } = validatedFields.data;
+    
+    // اینجا عملیات ذخیره‌سازی یا به‌روزرسانی در دیتابیس انجام می‌شود
+    // (برای نمونه کد پیاده‌سازی نشده است)
+
+    return {
+      message: id ? "شریک تجاری با موفقیت به‌روزرسانی شد" : "شریک تجاری جدید با موفقیت اضافه شد",
+    };
+  } catch (_error: unknown) {
+    return {
+      message: "خطایی در پردازش اطلاعات رخ داد",
+    };
+  }
 }

@@ -3,7 +3,6 @@
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -23,9 +22,8 @@ import { useFormState, useFormStatus } from 'react-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
 import { Loader2, PlusCircle } from 'lucide-react';
-import { saveAgentAction, type AgentFormState } from '../actions';
-import type { Agent, SalesPartner } from '@/lib/types';
-import { getSalesPartners } from '@/lib/data';
+import { saveAgentAction } from '../actions';
+import type { Agent, Partner } from '@/lib/types';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -38,26 +36,56 @@ function SubmitButton() {
   );
 }
 
-export function AgentFormDialog({ agent, children }: { agent?: Agent, children?: React.ReactNode }) {
-  const initialState: AgentFormState = { message: '' };
+export function AgentFormDialog({ agent, children }: { agent?: Agent; children?: React.ReactNode }) {
+  const initialState = { message: '', success: false };
   const [state, dispatch] = useFormState(saveAgentAction, initialState);
   const [isOpen, setIsOpen] = useState(false);
-  const [partners, setPartners] = useState<SalesPartner[]>([]);
+  const [partners, setPartners] = useState<Partner[]>([]);
   const { toast } = useToast();
   
   useEffect(() => {
-    getSalesPartners().then(setPartners);
-  }, []);
+    let active = true;
+
+    const loadPartners = async () => {
+      try {
+        const response = await fetch('/api/sales-partners', { cache: 'no-store' });
+        if (!response.ok) {
+          throw new Error(`Failed to fetch partners: ${response.status}`);
+        }
+        const data = (await response.json()) as Partner[];
+        if (active) {
+          setPartners(data);
+        }
+      } catch (error: unknown) {
+        console.error('Failed to load sales partners', error);
+        const errorMessage = error instanceof Error ? error.message : JSON.stringify(error);
+        if (active) {
+          toast({
+            variant: 'destructive',
+            title: 'خطا در دریافت همکاران',
+            description: `بارگیری فهرست همکاران فروش با مشکل مواجه شد. (${errorMessage})`,
+          });
+        }
+      }
+    };
+
+    loadPartners();
+
+    return () => {
+      active = false;
+    };
+  }, [toast]);
 
   useEffect(() => {
-    if (state.message) {
-      if (state.errors) {
-        toast({ variant: 'destructive', title: 'خطا در فرم', description: state.message });
-      } else {
-        toast({ title: 'عملیات موفق', description: state.message });
-        setIsOpen(false);
-      }
+    if (!state.message) return;
+
+    if (!state.success) {
+      toast({ variant: 'destructive', title: 'خطا در ثبت', description: state.message });
+      return;
     }
+
+    toast({ title: 'عملیات موفق', description: state.message });
+    setIsOpen(false);
   }, [state, toast]);
 
   return (
@@ -74,9 +102,9 @@ export function AgentFormDialog({ agent, children }: { agent?: Agent, children?:
             <Input id="name" name="name" defaultValue={agent?.name} className="bg-gray-900" />
           </div>
           <div>
-            <Label htmlFor="salesPartnerId">همکار فروش</Label>
-            <Select name="salesPartnerId" defaultValue={agent?.salesPartnerId || undefined}>
-              <SelectTrigger className="bg-gray-900">
+            <Label htmlFor="partnerId">همکار فروش</Label>
+            <Select name="partnerId" defaultValue={agent?.partnerId ?? undefined}>
+              <SelectTrigger id="partnerId" className="bg-gray-900">
                 <SelectValue placeholder="یک همکار فروش انتخاب کنید" />
               </SelectTrigger>
               <SelectContent className="bg-gray-800 border-gray-700 text-white">

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -17,7 +17,12 @@ export function PartnersClientPage({ partners }: { partners: Partner[] }) {
   const [isCalculating, startCalculationTransition] = useTransition();
   const [isExporting, startExportTransition] = useTransition();
   const { toast } = useToast();
-  const [readReplicaLag, setReadReplicaLag] = useState(Math.floor(Math.random() * 20));
+  const [readReplicaLag, setReadReplicaLag] = useState<number | null>(null);
+
+  // Calculate read replica lag once after component mounts to prevent hydration mismatch
+  useEffect(() => {
+    setReadReplicaLag(Math.floor(Math.random() * 20));
+  }, []);
 
   const handleCalculate = () => {
     if (!selectedPartnerId) {
@@ -69,7 +74,9 @@ export function PartnersClientPage({ partners }: { partners: Partner[] }) {
         <AlertTitle>راهنمای گزارش‌گیری</AlertTitle>
         <AlertDescription>
           این گزارش‌ها برای کاهش فشار بر سیستم، از روی پایگاه داده ثانویه (Read Replica) خوانده می‌شوند.
-          آخرین همگام‌سازی داده‌ها حدوداً {readReplicaLag} ثانیه قبل انجام شده است.
+          {readReplicaLag !== null && (
+            <>آخرین همگام‌سازی داده‌ها حدوداً {readReplicaLag} ثانیه قبل انجام شده است.</>
+          )}
         </AlertDescription>
       </Alert>
 

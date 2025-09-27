@@ -1,0 +1,736 @@
+{
+  "suite": "enhanced-puppeteer-suite",
+  "startedAt": "2025-09-27T16:01:51.465Z",
+  "finishedAt": "2025-09-27T16:03:19.364Z",
+  "durationMs": 87899,
+  "environment": {
+    "baseUrl": "http://localhost:9002",
+    "serverCommand": "npm run dev",
+    "readyEndpoint": "http://localhost:9002/api/internal/metrics",
+    "seedCommand": "npm run db:seed",
+    "startedAt": "2025-09-27T16:01:51.466Z",
+    "seedExecuted": true
+  },
+  "results": [
+    {
+      "module": "UI",
+      "test": "داشبورد - ناوبری",
+      "status": "FAIL",
+      "duration": 8626,
+      "error": "سایدبار یا ناوبری اصلی یافت نشد",
+      "details": {
+        "stack": "Error: سایدبار یا ناوبری اصلی یافت نشد\n    at <anonymous> (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-test-suite.ts:229:15)\n    at async EnhancedTestSuite.executeTest (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-test-suite.ts:114:22)\n    at async EnhancedTestSuite.testUIComponents (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-test-suite.ts:221:5)\n    at async <anonymous> (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-test-suite.ts:599:11)\n    at async TestEnvironmentManager.withEnvironment (/workspaces/https-github.com-Iscgrou-56/scripts/testing/orchestrator.ts:205:14)\n    at async EnhancedTestSuite.runAllTests (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-test-suite.ts:590:7)"
+      },
+      "screenshots": [],
+      "console": [
+        {
+          "severity": "INFO",
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_compiled_2ce9398a._.js:16383:53",
+          "page": "UI-داشبورد - ناوبری",
+          "timestamp": "2025-09-27T16:02:05.170Z"
+        },
+        {
+          "severity": "INFO",
+          "type": "warn",
+          "text": "The width(446) and height(350) are both fixed numbers,\n       maybe you don't need to use a ResponsiveContainer.",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_recharts_es6_8235043b._.js:2404:24",
+          "page": "UI-داشبورد - ناوبری",
+          "timestamp": "2025-09-27T16:02:05.410Z"
+        },
+        {
+          "severity": "INFO",
+          "type": "warn",
+          "text": "The width(446) and height(350) are both fixed numbers,\n       maybe you don't need to use a ResponsiveContainer.",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_recharts_es6_8235043b._.js:2404:24",
+          "page": "UI-داشبورد - ناوبری",
+          "timestamp": "2025-09-27T16:02:05.412Z"
+        },
+        {
+          "severity": "INFO",
+          "type": "log",
+          "text": "[Fast Refresh] done in NaNms",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:14847:12",
+          "page": "UI-داشبورد - ناوبری",
+          "timestamp": "2025-09-27T16:02:06.088Z"
+        }
+      ]
+    },
+    {
+      "module": "UI",
+      "test": "پروفایل نماینده",
+      "status": "FAIL",
+      "duration": 4335,
+      "error": "هیچ تب فعالی در صفحه پروفایل نماینده وجود ندارد",
+      "details": {
+        "stack": "Error: هیچ تب فعالی در صفحه پروفایل نماینده وجود ندارد\n    at <anonymous> (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-test-suite.ts:275:15)\n    at async EnhancedTestSuite.executeTest (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-test-suite.ts:114:22)\n    at async EnhancedTestSuite.testUIComponents (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-test-suite.ts:249:5)\n    at async <anonymous> (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-test-suite.ts:599:11)\n    at async TestEnvironmentManager.withEnvironment (/workspaces/https-github.com-Iscgrou-56/scripts/testing/orchestrator.ts:205:14)\n    at async EnhancedTestSuite.runAllTests (/workspaces/https-github.com-Iscgrou-56/scripts/enhanced-test-suite.ts:590:7)"
+      },
+      "screenshots": [],
+      "console": [
+        {
+          "severity": "INFO",
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_compiled_2ce9398a._.js:16383:53",
+          "page": "UI-پروفایل نماینده",
+          "timestamp": "2025-09-27T16:02:10.743Z"
+        }
+      ]
+    },
+    {
+      "module": "UI",
+      "test": "فرم پرداخت",
+      "status": "FAIL",
+      "duration": 3650,
+      "error": "Critical console errors detected",
+      "details": {
+        "dialogExists": true,
+        "inputs": [
+          {
+            "type": "number",
+            "name": "amount",
+            "placeholder": "مثلاً ۵۰۰۰۰۰۰"
+          },
+          {
+            "type": "date",
+            "name": "date",
+            "placeholder": ""
+          }
+        ],
+        "selects": 2,
+        "buttons": [
+          "یک نماینده را انتخاب کنید",
+          "واریز بانکی",
+          "ثبت پرداخت",
+          "Close"
+        ]
+      },
+      "screenshots": [
+        "/workspaces/https-github.com-Iscgrou-56/test-artifacts/2025-09-27T16-01-51-465Z/enhanced-puppeteer-suite/screenshots/001-ui-payment-form_png"
+      ],
+      "console": [
+        {
+          "severity": "INFO",
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_compiled_2ce9398a._.js:16383:53",
+          "page": "UI-فرم پرداخت",
+          "timestamp": "2025-09-27T16:02:14.023Z"
+        },
+        {
+          "severity": "CRITICAL",
+          "type": "error",
+          "text": "ReactDOM.useFormState has been renamed to React.useActionState. Please update %s to use React.useActionState. PaymentFormDialog",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:1225:31",
+          "page": "UI-فرم پرداخت",
+          "timestamp": "2025-09-27T16:02:14.159Z"
+        },
+        {
+          "severity": "INFO",
+          "type": "log",
+          "text": "[Fast Refresh] done in NaNms",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:14847:12",
+          "page": "UI-فرم پرداخت",
+          "timestamp": "2025-09-27T16:02:14.359Z"
+        }
+      ]
+    },
+    {
+      "module": "UserScenario",
+      "test": "افزودن پرداخت جدید",
+      "status": "FAIL",
+      "duration": 1449,
+      "error": "Critical console errors detected",
+      "details": {
+        "initialCount": 1,
+        "finalCount": 1,
+        "success": true
+      },
+      "screenshots": [
+        "/workspaces/https-github.com-Iscgrou-56/test-artifacts/2025-09-27T16-01-51-465Z/enhanced-puppeteer-suite/screenshots/002-scenario-add-payment_png"
+      ],
+      "console": [
+        {
+          "severity": "INFO",
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_compiled_2ce9398a._.js:16383:53",
+          "page": "UserScenario-افزودن پرداخت جدید",
+          "timestamp": "2025-09-27T16:02:15.533Z"
+        },
+        {
+          "severity": "CRITICAL",
+          "type": "error",
+          "text": "ReactDOM.useFormState has been renamed to React.useActionState. Please update %s to use React.useActionState. PaymentFormDialog",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:1225:31",
+          "page": "UserScenario-افزودن پرداخت جدید",
+          "timestamp": "2025-09-27T16:02:15.632Z"
+        },
+        {
+          "severity": "INFO",
+          "type": "log",
+          "text": "[Fast Refresh] done in NaNms",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:14847:12",
+          "page": "UserScenario-افزودن پرداخت جدید",
+          "timestamp": "2025-09-27T16:02:15.777Z"
+        }
+      ]
+    },
+    {
+      "module": "UserScenario",
+      "test": "مشاهده گزارش‌ها",
+      "status": "PASS",
+      "duration": 2767,
+      "details": {
+        "charts": 9,
+        "tables": 1,
+        "filters": 0
+      },
+      "screenshots": [
+        "/workspaces/https-github.com-Iscgrou-56/test-artifacts/2025-09-27T16-01-51-465Z/enhanced-puppeteer-suite/screenshots/003-scenario-reports_png"
+      ],
+      "console": [
+        {
+          "severity": "INFO",
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_compiled_2ce9398a._.js:16383:53",
+          "page": "UserScenario-مشاهده گزارش‌ها",
+          "timestamp": "2025-09-27T16:02:18.574Z"
+        }
+      ]
+    },
+    {
+      "module": "Hydration",
+      "test": "Hydration dashboard",
+      "status": "PASS",
+      "duration": 3651,
+      "details": {
+        "url": "/",
+        "hydrationErrors": [],
+        "hasHydrationErrors": false
+      },
+      "screenshots": [
+        "/workspaces/https-github.com-Iscgrou-56/test-artifacts/2025-09-27T16-01-51-465Z/enhanced-puppeteer-suite/screenshots/004-hydration-dashboard_png"
+      ],
+      "console": [
+        {
+          "severity": "INFO",
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_compiled_2ce9398a._.js:16383:53",
+          "page": "Hydration-Hydration dashboard",
+          "timestamp": "2025-09-27T16:02:19.837Z"
+        },
+        {
+          "severity": "INFO",
+          "type": "warn",
+          "text": "The width(446) and height(350) are both fixed numbers,\n       maybe you don't need to use a ResponsiveContainer.",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_recharts_es6_8235043b._.js:2404:24",
+          "page": "Hydration-Hydration dashboard",
+          "timestamp": "2025-09-27T16:02:20.138Z"
+        },
+        {
+          "severity": "INFO",
+          "type": "warn",
+          "text": "The width(446) and height(350) are both fixed numbers,\n       maybe you don't need to use a ResponsiveContainer.",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_recharts_es6_8235043b._.js:2404:24",
+          "page": "Hydration-Hydration dashboard",
+          "timestamp": "2025-09-27T16:02:20.138Z"
+        }
+      ]
+    },
+    {
+      "module": "Hydration",
+      "test": "Hydration agents",
+      "status": "FAIL",
+      "duration": 6403,
+      "error": "Critical console errors detected",
+      "details": {
+        "url": "/agents",
+        "hydrationErrors": [],
+        "hasHydrationErrors": false
+      },
+      "screenshots": [
+        "/workspaces/https-github.com-Iscgrou-56/test-artifacts/2025-09-27T16-01-51-465Z/enhanced-puppeteer-suite/screenshots/005-hydration-agents_png"
+      ],
+      "console": [
+        {
+          "severity": "INFO",
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_compiled_2ce9398a._.js:16383:53",
+          "page": "Hydration-Hydration agents",
+          "timestamp": "2025-09-27T16:02:25.387Z"
+        },
+        {
+          "severity": "CRITICAL",
+          "type": "error",
+          "text": "ReactDOM.useFormState has been renamed to React.useActionState. Please update %s to use React.useActionState. AgentFormDialog",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:1225:31",
+          "page": "Hydration-Hydration agents",
+          "timestamp": "2025-09-27T16:02:25.493Z"
+        },
+        {
+          "severity": "INFO",
+          "type": "log",
+          "text": "[Fast Refresh] done in NaNms",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:14847:12",
+          "page": "Hydration-Hydration agents",
+          "timestamp": "2025-09-27T16:02:26.371Z"
+        }
+      ]
+    },
+    {
+      "module": "Hydration",
+      "test": "Hydration partners",
+      "status": "PASS",
+      "duration": 5721,
+      "details": {
+        "url": "/partners",
+        "hydrationErrors": [],
+        "hasHydrationErrors": false
+      },
+      "screenshots": [
+        "/workspaces/https-github.com-Iscgrou-56/test-artifacts/2025-09-27T16-01-51-465Z/enhanced-puppeteer-suite/screenshots/006-hydration-partners_png"
+      ],
+      "console": [
+        {
+          "severity": "INFO",
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_compiled_2ce9398a._.js:16383:53",
+          "page": "Hydration-Hydration partners",
+          "timestamp": "2025-09-27T16:02:32.331Z"
+        }
+      ]
+    },
+    {
+      "module": "Hydration",
+      "test": "Hydration payments",
+      "status": "FAIL",
+      "duration": 3661,
+      "error": "Critical console errors detected",
+      "details": {
+        "url": "/payments",
+        "hydrationErrors": [],
+        "hasHydrationErrors": false
+      },
+      "screenshots": [
+        "/workspaces/https-github.com-Iscgrou-56/test-artifacts/2025-09-27T16-01-51-465Z/enhanced-puppeteer-suite/screenshots/007-hydration-payments_png"
+      ],
+      "console": [
+        {
+          "severity": "INFO",
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_compiled_2ce9398a._.js:16383:53",
+          "page": "Hydration-Hydration payments",
+          "timestamp": "2025-09-27T16:02:35.829Z"
+        },
+        {
+          "severity": "CRITICAL",
+          "type": "error",
+          "text": "ReactDOM.useFormState has been renamed to React.useActionState. Please update %s to use React.useActionState. PaymentFormDialog",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:1225:31",
+          "page": "Hydration-Hydration payments",
+          "timestamp": "2025-09-27T16:02:35.940Z"
+        }
+      ]
+    },
+    {
+      "module": "Hydration",
+      "test": "Hydration settings",
+      "status": "FAIL",
+      "duration": 9211,
+      "error": "Critical console errors detected",
+      "details": {
+        "url": "/settings",
+        "hydrationErrors": [],
+        "hasHydrationErrors": false
+      },
+      "screenshots": [
+        "/workspaces/https-github.com-Iscgrou-56/test-artifacts/2025-09-27T16-01-51-465Z/enhanced-puppeteer-suite/screenshots/008-hydration-settings_png"
+      ],
+      "console": [
+        {
+          "severity": "INFO",
+          "type": "verbose",
+          "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"current-password\"): (More info: https://goo.gl/9p2vKq) %o",
+          "location": "http://localhost:9002/settings",
+          "page": "Hydration-Hydration settings",
+          "timestamp": "2025-09-27T16:02:45.102Z"
+        },
+        {
+          "severity": "INFO",
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_compiled_2ce9398a._.js:16383:53",
+          "page": "Hydration-Hydration settings",
+          "timestamp": "2025-09-27T16:02:45.145Z"
+        },
+        {
+          "severity": "CRITICAL",
+          "type": "error",
+          "text": "ReactDOM.useFormState has been renamed to React.useActionState. Please update %s to use React.useActionState. SettingsForm",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:1225:31",
+          "page": "Hydration-Hydration settings",
+          "timestamp": "2025-09-27T16:02:45.241Z"
+        }
+      ]
+    },
+    {
+      "module": "Console",
+      "test": "Console dashboard",
+      "status": "PASS",
+      "duration": 4557,
+      "details": {
+        "url": "/",
+        "errorCount": 0,
+        "warningCount": 0,
+        "errors": [],
+        "warnings": []
+      },
+      "screenshots": [],
+      "console": [
+        {
+          "severity": "INFO",
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_compiled_2ce9398a._.js:16383:53",
+          "page": "Console-Console dashboard",
+          "timestamp": "2025-09-27T16:02:48.606Z"
+        },
+        {
+          "severity": "INFO",
+          "type": "warn",
+          "text": "The width(446) and height(350) are both fixed numbers,\n       maybe you don't need to use a ResponsiveContainer.",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_recharts_es6_8235043b._.js:2404:24",
+          "page": "Console-Console dashboard",
+          "timestamp": "2025-09-27T16:02:48.770Z"
+        },
+        {
+          "severity": "INFO",
+          "type": "warn",
+          "text": "The width(446) and height(350) are both fixed numbers,\n       maybe you don't need to use a ResponsiveContainer.",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_recharts_es6_8235043b._.js:2404:24",
+          "page": "Console-Console dashboard",
+          "timestamp": "2025-09-27T16:02:48.770Z"
+        }
+      ]
+    },
+    {
+      "module": "Console",
+      "test": "Console agents",
+      "status": "FAIL",
+      "duration": 4499,
+      "error": "Critical console errors detected",
+      "details": {
+        "url": "/agents",
+        "errorCount": 1,
+        "warningCount": 0,
+        "errors": [
+          "ReactDOM.useFormState has been renamed to React.useActionState. Please update %s to use React.useActionState. AgentFormDialog"
+        ],
+        "warnings": []
+      },
+      "screenshots": [],
+      "console": [
+        {
+          "severity": "INFO",
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_compiled_2ce9398a._.js:16383:53",
+          "page": "Console-Console agents",
+          "timestamp": "2025-09-27T16:02:53.256Z"
+        },
+        {
+          "severity": "CRITICAL",
+          "type": "error",
+          "text": "ReactDOM.useFormState has been renamed to React.useActionState. Please update %s to use React.useActionState. AgentFormDialog",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:1225:31",
+          "page": "Console-Console agents",
+          "timestamp": "2025-09-27T16:02:53.349Z"
+        },
+        {
+          "severity": "INFO",
+          "type": "log",
+          "text": "[Fast Refresh] done in NaNms",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:14847:12",
+          "page": "Console-Console agents",
+          "timestamp": "2025-09-27T16:02:53.531Z"
+        }
+      ]
+    },
+    {
+      "module": "Console",
+      "test": "Console partners",
+      "status": "PASS",
+      "duration": 4225,
+      "details": {
+        "url": "/partners",
+        "errorCount": 0,
+        "warningCount": 0,
+        "errors": [],
+        "warnings": []
+      },
+      "screenshots": [],
+      "console": [
+        {
+          "severity": "INFO",
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_compiled_2ce9398a._.js:16383:53",
+          "page": "Console-Console partners",
+          "timestamp": "2025-09-27T16:02:57.644Z"
+        }
+      ]
+    },
+    {
+      "module": "Console",
+      "test": "Console payments",
+      "status": "FAIL",
+      "duration": 4456,
+      "error": "Critical console errors detected",
+      "details": {
+        "url": "/payments",
+        "errorCount": 1,
+        "warningCount": 0,
+        "errors": [
+          "ReactDOM.useFormState has been renamed to React.useActionState. Please update %s to use React.useActionState. PaymentFormDialog"
+        ],
+        "warnings": []
+      },
+      "screenshots": [],
+      "console": [
+        {
+          "severity": "INFO",
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_compiled_2ce9398a._.js:16383:53",
+          "page": "Console-Console payments",
+          "timestamp": "2025-09-27T16:03:01.976Z"
+        },
+        {
+          "severity": "CRITICAL",
+          "type": "error",
+          "text": "ReactDOM.useFormState has been renamed to React.useActionState. Please update %s to use React.useActionState. PaymentFormDialog",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:1225:31",
+          "page": "Console-Console payments",
+          "timestamp": "2025-09-27T16:03:02.080Z"
+        },
+        {
+          "severity": "INFO",
+          "type": "log",
+          "text": "[Fast Refresh] done in NaNms",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:14847:12",
+          "page": "Console-Console payments",
+          "timestamp": "2025-09-27T16:03:02.210Z"
+        }
+      ]
+    },
+    {
+      "module": "Console",
+      "test": "Console invoices",
+      "status": "PASS",
+      "duration": 6023,
+      "details": {
+        "url": "/invoices",
+        "errorCount": 0,
+        "warningCount": 0,
+        "errors": [],
+        "warnings": []
+      },
+      "screenshots": [],
+      "console": [
+        {
+          "severity": "INFO",
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_compiled_2ce9398a._.js:16383:53",
+          "page": "Console-Console invoices",
+          "timestamp": "2025-09-27T16:03:08.060Z"
+        }
+      ]
+    },
+    {
+      "module": "Console",
+      "test": "Console settings",
+      "status": "FAIL",
+      "duration": 4508,
+      "error": "Critical console errors detected",
+      "details": {
+        "url": "/settings",
+        "errorCount": 1,
+        "warningCount": 0,
+        "errors": [
+          "ReactDOM.useFormState has been renamed to React.useActionState. Please update %s to use React.useActionState. SettingsForm"
+        ],
+        "warnings": []
+      },
+      "screenshots": [],
+      "console": [
+        {
+          "severity": "INFO",
+          "type": "verbose",
+          "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"current-password\"): (More info: https://goo.gl/9p2vKq) %o",
+          "location": "http://localhost:9002/settings",
+          "page": "Console-Console settings",
+          "timestamp": "2025-09-27T16:03:12.333Z"
+        },
+        {
+          "severity": "INFO",
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_compiled_2ce9398a._.js:16383:53",
+          "page": "Console-Console settings",
+          "timestamp": "2025-09-27T16:03:12.504Z"
+        },
+        {
+          "severity": "CRITICAL",
+          "type": "error",
+          "text": "ReactDOM.useFormState has been renamed to React.useActionState. Please update %s to use React.useActionState. SettingsForm",
+          "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:1225:31",
+          "page": "Console-Console settings",
+          "timestamp": "2025-09-27T16:03:12.608Z"
+        }
+      ]
+    },
+    {
+      "module": "API",
+      "test": "Endpoint /api/agents",
+      "status": "PASS",
+      "duration": 187,
+      "details": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "dataType": "object",
+        "isArray": true
+      },
+      "screenshots": [],
+      "console": []
+    },
+    {
+      "module": "API",
+      "test": "Endpoint /api/invoices",
+      "status": "PASS",
+      "duration": 1005,
+      "details": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "dataType": "object",
+        "isArray": true
+      },
+      "screenshots": [],
+      "console": []
+    },
+    {
+      "module": "API",
+      "test": "Endpoint /api/payments",
+      "status": "PASS",
+      "duration": 794,
+      "details": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "dataType": "object",
+        "isArray": true
+      },
+      "screenshots": [],
+      "console": []
+    },
+    {
+      "module": "API",
+      "test": "Endpoint /api/sales-partners",
+      "status": "PASS",
+      "duration": 57,
+      "details": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "dataType": "object",
+        "isArray": true
+      },
+      "screenshots": [],
+      "console": []
+    },
+    {
+      "module": "API",
+      "test": "Endpoint /api/agent-summaries",
+      "status": "PASS",
+      "duration": 733,
+      "details": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "dataType": "object",
+        "isArray": true
+      },
+      "screenshots": [],
+      "console": []
+    },
+    {
+      "module": "API",
+      "test": "Endpoint /api/internal/metrics",
+      "status": "PASS",
+      "duration": 55,
+      "details": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain; version=0.0.4; charset=utf-8",
+        "dataType": "string",
+        "isArray": false,
+        "responseSample": "# HELP process_cpu_user_seconds_total Total user CPU time spent in seconds.\n# TYPE process_cpu_user_seconds_total counter\nprocess_cpu_user_seconds_total 90.045857\n\n# HELP process_cpu_system_seconds_to"
+      },
+      "screenshots": [],
+      "console": []
+    }
+  ],
+  "metadata": {
+    "totalConsoleLogs": 38,
+    "consoleBreakdown": {
+      "critical": 8,
+      "warning": 0,
+      "info": 30
+    },
+    "moduleStats": {
+      "UI": {
+        "total": 3,
+        "passed": 0,
+        "failed": 3
+      },
+      "UserScenario": {
+        "total": 2,
+        "passed": 1,
+        "failed": 1
+      },
+      "Hydration": {
+        "total": 5,
+        "passed": 2,
+        "failed": 3
+      },
+      "Console": {
+        "total": 6,
+        "passed": 3,
+        "failed": 3
+      },
+      "API": {
+        "total": 6,
+        "passed": 6,
+        "failed": 0
+      }
+    },
+    "suiteSettings": {
+      "timeout": 20000,
+      "retryCount": 2,
+      "logLevel": "INFO",
+      "puppeteerArgs": [
+        "--no-sandbox",
+        "--disable-setuid-sandbox"
+      ]
+    }
+  }
+}

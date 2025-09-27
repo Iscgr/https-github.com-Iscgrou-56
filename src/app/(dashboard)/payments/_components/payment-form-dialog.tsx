@@ -1,5 +1,15 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { useFormState, useFormStatus } from 'react-dom';
+import { Loader2 } from 'lucide-react';
+
+import { recordPayment, type PaymentFormState } from '../actions';
+import type { Agent } from '@/lib/types';
+import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Dialog,
   DialogContent,
@@ -9,9 +19,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -19,21 +26,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useFormState } from 'react-dom';
-import { useFormStatus } from 'react-dom';
-import { useToast } from '@/hooks/use-toast';
-import { useEffect, useState } from 'react';
-import { Loader2 } from 'lucide-react';
-import { recordPayment, type PaymentFormState } from '../actions';
-// --- CHANGES START ---
-// We now fetch data via useEffect instead of direct import
-import { getAgents, getInvoices } from '@/lib/data';
-import type { Agent, Invoice } from '@/lib/types';
-// --- CHANGES END ---
 
 type Props = {
   children?: React.ReactNode;
 };
+
+const paymentMethods = [
+  { value: 'EXTERNAL', label: 'واریز بانکی' },
+  { value: 'INTERNAL_SETTLEMENT', label: 'تسویه از کیف پول' },
+];
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -55,62 +56,134 @@ export function PaymentFormDialog({ children }: Props) {
   const initialState: PaymentFormState = { message: '' };
   const [state, dispatch] = useFormState(recordPayment, initialState);
   const [isOpen, setIsOpen] = useState(false);
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [defaultDate, setDefaultDate] = useState('');
   const { toast } = useToast();
 
-  // --- CHANGES START ---
-  // State to hold data fetched from the server
-  const [agents, setAgents] = useState<Agent[]>([]);
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [selectedAgentId, setSelectedAgentId] = useState<string | undefined>();
-  
   useEffect(() => {
-    // Fetch initial data when the component mounts
-    async function fetchData() {
-        const [agentsData, invoicesData] = await Promise.all([getAgents(), getInvoices()]);
-        setAgents(agentsData);
-        setInvoices(invoicesData);
-    }
-    fetchData();
+    // Set default date to avoid hydration mismatch
+    setDefaultDate(new Date().toISOString().slice(0, 10));
   }, []);
-  // --- CHANGES END ---
 
   useEffect(() => {
-    if (state.message) {
-      if (state.errors) {
+    let active = true;
+
+    const loadAgents = async () => {
+      try {
+        const response = await fetch('/api/agents', { cache: 'no-store' });
+        if (!response.ok) {
+          throw new Error(`Failed to fetch agents: ${response.status}`);
+        }
+        const data = (await response.json()) as Agent[];
+        if (active) {
+          setAgents(data);
+        }
+      } catch (error) {
+        console.error('Failed to load agents', error);
         toast({
           variant: 'destructive',
-          title: 'خطا در فرم',
-          description: state.message,
+          title: 'خطا در دریافت نمایندگان',
+          description: 'بارگیری فهرست نمایندگان با مشکل مواجه شد.',
         });
-      } else {
-        toast({
-          title: 'عملیات موفق',
-          description: state.message,
-        });
-        setIsOpen(false);
       }
-    }
-  }, [state, toast]);
+    };
 
-  const agentInvoices = selectedAgentId ? invoices.filter(inv => inv.agentId === selectedAgentId && inv.status !== 'paid') : [];
+    loadAgents();
+
+    return () => {
+      active = false;
+    };
+  }, [toast]);
+
+  useEffect(() => {
+    if (!state.message) return;
+
+    if (state.errors) {
+      toast({
+        variant: 'destructive',
+        title: 'خطا در فرم',
+        description: state.message,
+      });
+      return;
+    }
+
+    toast({
+      title: 'عملیات موفق',
+      description: state.message,
+    });
+    setIsOpen(false);
+  }, [state, toast]);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] bg-gray-800 text-white border-gray-700">
+      <DialogTrigger asChild>{children || <Button>پرداخت جدید</Button>}</DialogTrigger>
+      <DialogContent className="sm:max-w-[440px]">
         <DialogHeader>
           <DialogTitle>ثبت پرداخت جدید</DialogTitle>
           <DialogDescription>
-            مبلغ واریزی جدید یا تسویه از اعتبار داخلی را ثبت کنید.
+            مبلغ و روش پرداخت را وارد کنید تا در سامانه ثبت شود.
           </DialogDescription>
         </DialogHeader>
-        <form action={dispatch}>
-            {/* ... (rest of the form remains, but now uses state for agents/invoices) */}
-            <Select name="agentId" onValueChange={setSelectedAgentId}>
-                {/* ... */}
+        <form action={dispatch} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="agentId">نماینده</Label>
+            <Select name="agentId" required>
+              <SelectTrigger id="agentId">
+                <SelectValue placeholder="یک نماینده را انتخاب کنید" />
+              </SelectTrigger>
+              <SelectContent>
+                {agents.map((agent) => (
+                  <SelectItem key={agent.id} value={agent.id}>
+                    {agent.name} ({agent.code})
+                  </SelectItem>
+                ))}
+              </SelectContent>
             </Select>
-            {/* ... */}
-          <SubmitButton />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="amount">مبلغ پرداخت</Label>
+            <Input
+              id="amount"
+              name="amount"
+              type="number"
+              min="0"
+              step="1000"
+              placeholder="مثلاً ۵۰۰۰۰۰۰"
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="paymentMethod">روش پرداخت</Label>
+            <Select name="paymentMethod" defaultValue="EXTERNAL">
+              <SelectTrigger id="paymentMethod">
+                <SelectValue placeholder="روش پرداخت" />
+              </SelectTrigger>
+              <SelectContent>
+                {paymentMethods.map((method) => (
+                  <SelectItem key={method.value} value={method.value}>
+                    {method.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="date">تاریخ پرداخت</Label>
+            <Input
+              id="date"
+              name="date"
+              type="date"
+              defaultValue={defaultDate}
+              required
+            />
+          </div>
+
+          <DialogFooter>
+            <SubmitButton />
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

@@ -1,0 +1,313 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AgentStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  UNPAID
+  PARTIAL
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum InvoiceSource {
+  BATCH_UPLOAD
+  MANUAL
+  SYSTEM
+}
+
+enum WalletTransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  SETTLEMENT
+  REVERSAL
+}
+
+enum PaymentMethod {
+  EXTERNAL
+  INTERNAL_SETTLEMENT
+  ADJUSTMENT
+}
+
+enum NotificationType {
+  OVERDUE_REMINDER
+  INVOICE_ISSUED
+  PAYMENT_RECEIVED
+}
+
+enum NotificationStatus {
+  SUCCESS
+  FAILED
+}
+
+model Partner {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  agents           Agent[]
+  CommissionReport CommissionReport[]
+}
+
+model Agent {
+  id             String      @id @default(uuid())
+  code           String      @unique
+  name           String
+  partnerId      String
+  commissionRate Decimal     @db.Decimal(5, 4)
+  status         AgentStatus @default(ACTIVE)
+  email          String?
+  phone          String?
+  telegramChatId String?
+  avatarUrl      String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  partner               Partner                @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  invoices              Invoice[]
+  payments              Payment[]
+  wallet                Wallet?
+  commissionReports     CommissionReport[]
+  commissionAdjustments CommissionAdjustment[]
+  AgentFinancialSummary AgentFinancialSummary?
+  PortalAppearance      PortalAppearance?
+}
+
+model Invoice {
+  id            String        @id @default(uuid())
+  agentId       String
+  invoiceNumber String        @unique
+  amount        Decimal       @db.Decimal(18, 2)
+  currency      String        @default("IRR")
+  issueDate     DateTime
+  dueDate       DateTime
+  status        InvoiceStatus @default(UNPAID)
+  source        InvoiceSource @default(SYSTEM)
+  batchId       String?
+  metadata      Json?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  agent             Agent                  @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  batch             InvoiceBatch?          @relation(fields: [batchId], references: [id])
+  items             InvoiceItem[]
+  statusHistory     InvoiceStatusHistory[]
+  payments          Payment[]
+  notificationLogs  NotificationLog[]
+  WalletTransaction WalletTransaction[]
+}
+
+model InvoiceItem {
+  id          String  @id @default(uuid())
+  invoiceId   String
+  description String
+  quantity    Int     @default(1)
+  unitAmount  Decimal @db.Decimal(18, 2)
+  totalAmount Decimal @db.Decimal(18, 2)
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+}
+
+model InvoiceStatusHistory {
+  id          String        @id @default(uuid())
+  invoiceId   String
+  fromStatus  InvoiceStatus
+  toStatus    InvoiceStatus
+  actorUserId String
+  notes       String?
+  changedAt   DateTime      @default(now())
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+}
+
+model InvoiceBatch {
+  id             String   @id @default(uuid())
+  jobId          String   @unique
+  idempotencyKey String   @unique
+  processedAt    DateTime @default(now())
+  metadata       Json?
+
+  invoices Invoice[]
+}
+
+model Payment {
+  id         String        @id @default(uuid())
+  agentId    String
+  invoiceId  String?
+  amount     Decimal       @db.Decimal(18, 2)
+  method     PaymentMethod @default(EXTERNAL)
+  reference  String?
+  note       String?
+  recordedAt DateTime      @default(now())
+  createdAt  DateTime      @default(now())
+
+  agent             Agent              @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  invoice           Invoice?           @relation(fields: [invoiceId], references: [id])
+  walletTransaction WalletTransaction?
+}
+
+model Wallet {
+  id                String    @id @default(uuid())
+  agentId           String    @unique
+  balance           Decimal   @default(0) @db.Decimal(18, 2)
+  currency          String    @default("IRR")
+  lastTransactionAt DateTime?
+  version           Int       @default(0)
+
+  agent        Agent               @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  transactions WalletTransaction[]
+}
+
+model WalletTransaction {
+  id          String                @id @default(uuid())
+  walletId    String
+  type        WalletTransactionType
+  amount      Decimal               @db.Decimal(18, 2)
+  referenceId String?
+  notes       String?
+  createdAt   DateTime              @default(now())
+  invoiceId   String?
+  paymentId   String?               @unique
+
+  wallet  Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  invoice Invoice? @relation(fields: [invoiceId], references: [id])
+  payment Payment? @relation(fields: [paymentId], references: [id])
+
+  @@index([walletId])
+  @@index([invoiceId])
+  @@index([paymentId])
+}
+
+model AuditLog {
+  id            String   @id @default(uuid())
+  entityType    String
+  entityId      String
+  action        String
+  actorUserId   String
+  correlationId String?
+  payload       Json
+  createdAt     DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+model NotificationLog {
+  id           String             @id @default(uuid())
+  invoiceId    String
+  type         NotificationType
+  status       NotificationStatus
+  sentAt       DateTime           @default(now())
+  errorMessage String?
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId, type])
+}
+
+model SystemSetting {
+  key         String   @id
+  value       String
+  isSensitive Boolean  @default(false)
+  description String?
+  updatedBy   String
+  updatedAt   DateTime @default(now())
+  version     Int      @default(1)
+
+  auditLogs SettingsAuditLog[]
+}
+
+model SettingsAuditLog {
+  id         String   @id @default(uuid())
+  settingKey String
+  oldValue   String?
+  newValue   String
+  changedBy  String
+  changedAt  DateTime @default(now())
+
+  setting SystemSetting @relation(fields: [settingKey], references: [key], onDelete: Cascade)
+
+  @@index([settingKey])
+}
+
+model ProcessedUsageHash {
+  hash      String   @id
+  createdAt DateTime @default(now())
+}
+
+model CommissionReport {
+  id                String    @id @default(uuid())
+  agentId           String
+  partnerId         String
+  periodStart       DateTime
+  periodEnd         DateTime
+  totalCommission   Decimal   @db.Decimal(18, 2)
+  status            String    @default("DRAFT")
+  calculationDetail Json?
+  createdAt         DateTime  @default(now())
+  finalizedAt       DateTime?
+
+  agent       Agent                  @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  partner     Partner                @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  adjustments CommissionAdjustment[]
+}
+
+model CommissionAdjustment {
+  id              String   @id @default(uuid())
+  agentId         String
+  amount          Decimal  @db.Decimal(18, 2)
+  reason          String
+  createdAt       DateTime @default(now())
+  appliedReportId String?
+  status          String   @default("UNAPPLIED")
+
+  agent  Agent             @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  report CommissionReport? @relation(fields: [appliedReportId], references: [id])
+}
+
+model AgentFinancialSummary {
+  id                String   @id @default(uuid())
+  agentId           String   @unique
+  totalBilled       Decimal  @default(0) @db.Decimal(18, 2)
+  totalPaid         Decimal  @default(0) @db.Decimal(18, 2)
+  outstandingAmount Decimal  @default(0) @db.Decimal(18, 2)
+  draftCount        Int      @default(0)
+  unpaidCount       Int      @default(0)
+  overdueCount      Int      @default(0)
+  paidCount         Int      @default(0)
+  lastCalculatedAt  DateTime @default(now())
+
+  agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+}
+
+model PortalAppearance {
+  id        String   @id @default(uuid())
+  agentId   String   @unique
+  theme     Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+}

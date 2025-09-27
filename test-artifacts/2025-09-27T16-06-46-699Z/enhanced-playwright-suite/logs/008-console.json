@@ -1,0 +1,26 @@
+[
+  {
+    "severity": "INFO",
+    "type": "info",
+    "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+    "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_compiled_2ce9398a._.js:16383:53",
+    "page": "Hydration-Hydration payments",
+    "timestamp": "2025-09-27T16:07:25.999Z"
+  },
+  {
+    "severity": "CRITICAL",
+    "type": "error",
+    "text": "ReactDOM.useFormState has been renamed to React.useActionState. Please update %s to use React.useActionState. PaymentFormDialog",
+    "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:1225:31",
+    "page": "Hydration-Hydration payments",
+    "timestamp": "2025-09-27T16:07:26.118Z"
+  },
+  {
+    "severity": "INFO",
+    "type": "log",
+    "text": "[Fast Refresh] done in NaNms",
+    "location": "http://localhost:9002/_next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js:14847:12",
+    "page": "Hydration-Hydration payments",
+    "timestamp": "2025-09-27T16:07:26.260Z"
+  }
+]

@@ -1,8 +1,8 @@
 
 'use client';
 
-import { useActionState, useTransition, useState } from 'react';
-import { useFormStatus } from 'react-dom';
+import { useTransition, useState } from 'react';
+import { useFormState, useFormStatus } from 'react-dom';
 import {
   CardContent,
   CardFooter,
@@ -32,7 +32,7 @@ function SubmitButton() {
 }
 
 export function SettingsForm({ settings }: { settings: TelegramSettings }) {
-    const [state, formAction] = useActionState(saveTelegramSettingsAction, initialState);
+    const [state, formAction] = useFormState(saveTelegramSettingsAction, initialState);
     const [isTesting, startTestTransition] = useTransition();
     const [testChatId, setTestChatId] = useState(settings.chatId || '');
     const { toast } = useToast();

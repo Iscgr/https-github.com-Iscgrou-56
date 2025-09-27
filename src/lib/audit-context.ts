@@ -20,11 +20,11 @@ export function getRequiredAuditActor(): Actor {
  * The Context Provider HOF.
  * Wraps an entry-point function (e.g., a server action) to establish the audit context.
  */
-export function withAuditContext<T extends (...args: any[]) => Promise<any>>(
-    actor: Actor, 
-    fn: T
-): (...args: Parameters<T>) => Promise<ReturnType<T>> {
-    return async (...args: Parameters<T>): Promise<ReturnType<T>> => {
-        return auditContext.run(actor, () => fn(...args));
-    };
+export function withAuditContext<TArgs extends unknown[], TResult>(
+  actor: Actor,
+  fn: (...args: TArgs) => Promise<TResult>
+): (...args: TArgs) => Promise<TResult> {
+  return async (...args: TArgs): Promise<TResult> => {
+    return auditContext.run(actor, () => fn(...args));
+  };
 }
